@@ -49,3 +49,4 @@ include_directories(${SYSTEM_INCLUDE_DIR})
 
 add_subdirectory(aoc_test)
 add_subdirectory(aoc1)
+add_subdirectory(aoc2)
