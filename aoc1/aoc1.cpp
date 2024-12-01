@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <numeric>
+#include <ranges>
 
 #include "ctre_inc.h"
 
@@ -19,12 +20,22 @@ auto get_input()
 			vr.emplace_back(b.to_number<int64_t>());
 		}
 	}
-	std::sort(vl.begin(), vl.end());
-	std::sort(vr.begin(), vr.end());
+	std::ranges::sort(vl);
+	std::ranges::sort(vr);
 
 	return std::make_pair(vl, vr);
 }
 
+#if defined(__cpp_lib_ranges_fold)
+int64_t pt1(auto const& l, auto const& r)
+{
+	auto difference = [](auto l, auto r)
+	{
+		return std::abs(l - r);
+	};
+	return std::ranges::fold_left_first(std::views::zip_transform(difference, l, r), std::plus<>()).value().value();
+}
+#else
 int64_t pt1(auto const& l, auto const& r)
 {
 	return std::transform_reduce(l.begin(), l.end(), r.begin(), 0LL, std::plus<>(), [](auto l, auto r)
@@ -32,6 +43,7 @@ int64_t pt1(auto const& l, auto const& r)
 		return std::abs(l - r);
 	});
 }
+#endif
 
 int64_t pt2(auto const& vl, auto const& vr)
 {
