@@ -5,6 +5,7 @@
 #include <numeric>
 
 #include "ctre_inc.h"
+#include "timer.h"
 
 auto get_input()
 {
@@ -22,6 +23,7 @@ auto get_input()
 
 auto pt12(auto const& in)
 {
+	timer t("pt12");
 	int cnt1{0};
 	int cnt2{0};
 	std::vector<int> wsp;
@@ -36,7 +38,9 @@ auto pt12(auto const& in)
 	for(auto& v : in)
 	{
 		if (is_good(v))
+		{
 			++cnt1;
+		}
 		else
 		{
 			for (int n{ 0 }; n < v.size(); ++n)
