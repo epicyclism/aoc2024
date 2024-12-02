@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -9,26 +10,16 @@
 
 auto get_input()
 {
-	std::vector<int64_t> rv;
+	std::vector<uint64_t> rv;
 
 	std::string ln;
 	while(std::getline(std::cin, ln))
 	{
 		rv.push_back({});
-		int cnt{ 0 };
 		for (auto m : ctre::search_all<"(\\d+)">(ln))
 		{
 			rv.back() <<= 8;
-			rv.back() |= m.to_number<unsigned char>() + 7;
-			++cnt;
-		}
-		while (cnt < 8)
-		{
-			int a = rv.back() & 0xff;
-			int d = a - ((rv.back() >> 8) & 0xff);
-			rv.back() <<= 8;
-			rv.back() |= (a + d) & 0xff;
-			++cnt;
+			rv.back() |= m.to_number<unsigned char>();
 		}
 	}
 	return rv;
@@ -36,65 +27,54 @@ auto get_input()
 
 bool pass(int64_t a)
 {
-	auto b = a << 8;
-	auto d = a - b;
-	if (b > a)
+	uint64_t zero_mask = 0xffffffffffffffff;
+	uint64_t zero_test = 0xff00000000000000;
+	while(!(a & zero_test))
 	{
-		b |= 0x7f;
-		d = b - a;
+		zero_mask >>= 8;
+		zero_test >>= 8;
 	}
-	return (d == (d & 0x03030303030303ff)) &&
-				(d & 0xff00000000000000)&&
-				(d & 0x00ff000000000000)&&
-				(d & 0x0000ff0000000000)&&
-				(d & 0x000000ff00000000)&&
-				(d & 0x00000000ff000000)&&
-				(d & 0x0000000000ff0000)&&
-				(d & 0x000000000000ff00);
-}
-
-bool pass7(int64_t a)
-{
-	auto b = a << 8;
-	auto d = a - b;
-	if (b > a)
+	zero_mask &= 0xffffffffffffff00;
+	auto b = (a << 8) & zero_mask;
+	a &= zero_mask;
+	auto d = a > b ? a - b : b - a;
+	while(zero_test != 0xff)
 	{
-		b |= 0x7f7f;
-		d = b - a;
+		if(!(d & zero_test))
+			return false;
+		zero_test >>= 8;
 	}
-	return (d == (d & 0x030303030303ffff)) &&
-		(d & 0xff00000000000000) &&
-		(d & 0x00ff000000000000) &&
-		(d & 0x0000ff0000000000) &&
-		(d & 0x000000ff00000000) &&
-		(d & 0x00000000ff000000) &&
-		(d & 0x0000000000ff0000) ;
+	return (d == (d & 0x03030303030303ff));
 }
 
 auto pt12(auto const& in)
 {
-	timer t("p12");
+//	timer t("p12");
 	int cnt1{0};
 	int cnt2{0};
+	int c{0};
 	for (auto v : in)
 	{
 		if (pass(v))
+		{
 			++cnt1;
+		}
 		else
 		{
-			auto t = v << 8;
-			if (pass7(t) ||
-				pass7((v & 0xff00000000000000) | (t & 0x00ffffffffffffff)) ||
-				pass7((v & 0xffff000000000000) | (t & 0x0000ffffffffffff)) ||
-				pass7((v & 0xffffff0000000000) | (t & 0x000000ffffffffff)) ||
-				pass7((v & 0xffffffff00000000) | (t & 0x00000000ffffffff)) ||
-				pass7((v & 0xffffffffff000000) | (t & 0x0000000000ffffff)) ||
-				pass7((v & 0xffffffffffff0000) | (t & 0x000000000000ffff)) ||
-				pass7(v & 0xffffffffffffff00))
+			auto t = v >> 8;
+			if (pass(t) ||
+				pass((v & 0x00000000000000ff) | (t & 0xffffffffffffff00)) ||
+				pass((v & 0x000000000000ffff) | (t & 0xffffffffffff0000)) ||
+				pass((v & 0x0000000000ffffff) | (t & 0xffffffffff000000)) ||
+				pass((v & 0x00000000ffffffff) | (t & 0xffffffff00000000)) ||
+				pass((v & 0x000000ffffffffff) | (t & 0xffffff0000000000)) ||
+				pass((v & 0x0000ffffffffffff) | (t & 0xffff000000000000)) ||
+				pass( v & 0x00ffffffffffffff))
 			{
 				++cnt2;
 			}
 		}
+		++c;
 	}
 	return std::make_pair(cnt1, cnt1 + cnt2);
 }

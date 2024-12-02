@@ -23,9 +23,10 @@ auto get_input()
 
 auto pt12(auto const& in)
 {
-	timer t("pt12");
+//	timer t("pt12");
 	int cnt1{0};
 	int cnt2{0};
+	int c{0};
 	std::vector<int> wsp;
 	std::vector<int> wsp2;
 	auto is_good = [&](std::vector<int> v)
@@ -54,6 +55,7 @@ auto pt12(auto const& in)
 				}
 			}
 		}
+		++c;
 	}
 
 	return std::make_pair(cnt1, cnt1 + cnt2);
