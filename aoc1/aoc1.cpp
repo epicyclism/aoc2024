@@ -26,7 +26,8 @@ auto get_input()
 	return std::make_pair(vl, vr);
 }
 
-#if defined(__cpp_lib_ranges_fold)
+#if 0
+//#if defined(__cpp_lib_ranges_fold)
 int64_t pt1(auto const& l, auto const& r)
 {
 	auto difference = [](auto l, auto r)
