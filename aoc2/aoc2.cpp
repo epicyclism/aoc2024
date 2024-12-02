@@ -26,10 +26,9 @@ auto pt12(auto const& in)
 //	timer t("pt12");
 	int cnt1{0};
 	int cnt2{0};
-	int c{0};
 	std::vector<int> wsp;
 	std::vector<int> wsp2;
-	auto is_good = [&](std::vector<int> v)
+	auto safe = [&](std::vector<int> v)
 		{
 			wsp.resize(v.size());
 			std::adjacent_difference(v.begin(), v.end(), wsp.begin());
@@ -38,7 +37,7 @@ auto pt12(auto const& in)
 		};
 	for(auto& v : in)
 	{
-		if (is_good(v))
+		if (safe(v))
 		{
 			++cnt1;
 		}
@@ -48,14 +47,13 @@ auto pt12(auto const& in)
 			{
 				wsp2 = v;
 				wsp2.erase(wsp2.begin() + n);
-				if (is_good(wsp2))
+				if (safe(wsp2))
 				{
 					++cnt2;
 					break;
 				}
 			}
 		}
-		++c;
 	}
 
 	return std::make_pair(cnt1, cnt1 + cnt2);

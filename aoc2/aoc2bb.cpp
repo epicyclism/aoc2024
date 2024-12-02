@@ -1,9 +1,6 @@
 #include <iostream>
-#include <iomanip>
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <numeric>
 
 #include "ctre_inc.h"
 #include "timer.h"
@@ -25,7 +22,7 @@ auto get_input()
 	return rv;
 }
 
-bool pass(int64_t a)
+bool safe(int64_t a)
 {
 	uint64_t zero_mask = 0xffffffffffffffff;
 	uint64_t zero_test = 0xff00000000000000;
@@ -52,29 +49,27 @@ auto pt12(auto const& in)
 //	timer t("p12");
 	int cnt1{0};
 	int cnt2{0};
-	int c{0};
 	for (auto v : in)
 	{
-		if (pass(v))
+		if (safe(v))
 		{
 			++cnt1;
 		}
 		else
 		{
 			auto t = v >> 8;
-			if (pass(t) ||
-				pass((v & 0x00000000000000ff) | (t & 0xffffffffffffff00)) ||
-				pass((v & 0x000000000000ffff) | (t & 0xffffffffffff0000)) ||
-				pass((v & 0x0000000000ffffff) | (t & 0xffffffffff000000)) ||
-				pass((v & 0x00000000ffffffff) | (t & 0xffffffff00000000)) ||
-				pass((v & 0x000000ffffffffff) | (t & 0xffffff0000000000)) ||
-				pass((v & 0x0000ffffffffffff) | (t & 0xffff000000000000)) ||
-				pass( v & 0x00ffffffffffffff))
+			if (safe(t) ||
+				safe((v & 0x00000000000000ff) | (t & 0xffffffffffffff00)) ||
+				safe((v & 0x000000000000ffff) | (t & 0xffffffffffff0000)) ||
+				safe((v & 0x0000000000ffffff) | (t & 0xffffffffff000000)) ||
+				safe((v & 0x00000000ffffffff) | (t & 0xffffffff00000000)) ||
+				safe((v & 0x000000ffffffffff) | (t & 0xffffff0000000000)) ||
+				safe((v & 0x0000ffffffffffff) | (t & 0xffff000000000000)) ||
+				safe( v & 0x00ffffffffffffff))
 			{
 				++cnt2;
 			}
 		}
-		++c;
 	}
 	return std::make_pair(cnt1, cnt1 + cnt2);
 }
