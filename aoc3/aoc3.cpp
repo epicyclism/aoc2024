@@ -19,7 +19,8 @@ auto pt12(auto const& in)
 	int64_t p1{0};
 	int64_t p2{0};
 	for(auto& s: in)
-		for (auto [m, a, b, d1, d0] : ctre::search_all<"mul\\((\\d+),(\\d+)\\)|(do\\(\\))|(don't\\(\\))">(s))
+//		for (auto [m, a, b, d1, d0] : ctre::search_all<"mul\\((\\d+),(\\d+)\\)|(do\\(\\))|(don't\\(\\))">(s))
+		for (auto [m, a, b, d1, d0] : ctre::search_all<"mul\\((\\d{1,3}),(\\d{1,3})\\)|(do\\(\\))|(don't\\(\\))">(s))
 		{
 			if(d1)
 				do_ = true;
