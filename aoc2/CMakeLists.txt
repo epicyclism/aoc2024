@@ -7,3 +7,5 @@ target_link_libraries(aoc2 PRIVATE ctre::ctre)
 add_executable(aoc2bb aoc2bb.cpp)
 target_include_directories(aoc2bb PUBLIC ../common)
 target_link_libraries(aoc2bb PRIVATE ctre::ctre)
+
+add_executable(aoc2_reddit aoc2_reddit.cpp)
