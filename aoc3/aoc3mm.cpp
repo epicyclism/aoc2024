@@ -3,16 +3,9 @@
 #include <string>
 
 #include "ctre_inc.h"
+#include "mm_file.h"
 #include "timer.h"
 
-auto get_input()
-{
-	std::string r;
-	std::string ln;
-	while(std::getline(std::cin, ln))
-		r += ln;
-	return r;
-}
 
 auto pt12(auto const& in)
 {
@@ -38,11 +31,15 @@ auto pt12(auto const& in)
 	return std::make_pair(p1, p2);
 }
 
-int main()
+int main(int ac, char ** av)
 {
 	timer t("Overall");
-	auto in {get_input()};
-	auto[p1, p2] = pt12(in);
+	if (ac < 2)
+		return -1;
+	mem_map_file<char> mm{ av[1] };
+	if (!mm)
+		return -1;
+	auto[p1, p2] = pt12(std::string_view{mm.ptr(), mm.length()});
 	std::cout << "pt1 = " << p1 << "\n";
 	std::cout << "pt2 = " << p2 << "\n";
 }
