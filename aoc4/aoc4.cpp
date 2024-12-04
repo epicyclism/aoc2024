@@ -12,9 +12,13 @@ auto get_input()
 {
 	std::string r;
 	std::string ln;
-	while(std::getline(std::cin, ln))
+	size_t stride{ 0 };
+	while (std::getline(std::cin, ln))
+	{
+		if(stride == 0) stride = ln.size();
 		r += ln;
-	return std::make_pair(ln.size(), r);
+	}
+	return std::make_pair(stride, r);
 }
 
 struct pt
