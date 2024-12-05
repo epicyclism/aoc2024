@@ -4,10 +4,10 @@
 #include <set>
 #include <string>
 #include <algorithm>
-#include <numeric>
 #include <ranges>
 
 #include "ctre_inc.h"
+#include "timer.h"
 
 auto get_input()
 {
@@ -51,20 +51,19 @@ bool ordered (auto const& rules, auto const& l)
 
 std::pair<int, int> pt12(auto const& rules, auto& lists)
 {
+	timer t("pt12");
 	int rv1{0};
 	int rv2{0};
 
 	for(auto& l: lists)
 	{
 		if(ordered(rules, l))
-		{
 			rv1 += l[l.size() / 2];
-		}
 		else
 		{
-			std::stable_sort(l.begin(), l.end(), [&](auto l, auto r)
+			std::sort(l.begin(), l.end(), [&](auto le, auto re)
 			{
-				return rules.contains(r) && rules.at(r).contains(l);
+				return !(rules.contains(re) && rules.at(re).contains(le));
 			});
 			rv2 += l[l.size() / 2];
 		}
