@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <numeric>
 #include <execution>
 
 #include "ctre_inc.h"
@@ -13,16 +14,16 @@ auto get_input()
 	std::vector<linear_set<unsigned char>> rules(100);
 	std::vector<std::vector<unsigned char>> lists;
 	std::string ln;
-	while (std::getline(std::cin, ln))
+	while(std::getline(std::cin, ln))
 	{
-		if (ln.empty())
+		if(ln.empty())
 			break;
-		if (auto [m, a, b] = ctre::match<"(\\d+)\\|(\\d+)">(ln); m)
+		if(auto[m, a, b] = ctre::match<"(\\d+)\\|(\\d+)">(ln); m)
 		{
-			rules[b.to_number<int>()].emplace_back(a.to_number<unsigned char>());
+			rules[b.to_number<int>()].emplace_back( a.to_number<unsigned char>());
 		}
 	}
-	while (std::getline(std::cin, ln))
+	while(std::getline(std::cin, ln))
 	{
 		lists.push_back({});
 		for (auto m : ctre::search_all<"(\\d+)">(ln))
@@ -32,13 +33,15 @@ auto get_input()
 	return std::make_pair(rules, lists);
 }
 
-bool ordered(auto const& rules, auto const& l)
+bool ordered (auto const& rules, auto const& l)
 {
-	for (int n{ 0 }; n < l.size(); ++n)
+	for(int n{0}; n < l.size(); ++n)
 	{
-		for (int m{ n + 1 }; m < l.size(); ++m)
+		for(int m{n + 1}; m < l.size(); ++m)
 		{
-			if (rules[l[n]].contains(l[m]))
+			if(l[n] > 99)
+				std::cout << l[n] << " oops\n";
+			if(rules[l[n]].contains(l[m]))
 				return false;
 		}
 	}
@@ -59,17 +62,15 @@ std::pair<int, int> pt12(auto const& rules, auto& lists)
 		else
 			lists2.emplace_back(l);
 	}
-//	rv2 = std::transform_reduce(std::execution::par, lists2.begin(), lists2.end(), 0, std::plus<>(),
-	rv2 = std::transform_reduce(lists2.begin(), lists2.end(), 0, std::plus<>(),
-			[&](auto& l)
-			{	
-				std::sort(l.begin(), l.end());
-				while (std::next_permutation(l.begin(), l.end()))
+	rv2 = std::transform_reduce(std::execution::par, lists2.begin(), lists2.end(), 0, std::plus<>(),
+		[&](auto& l)
+		{
+			std::sort(l.begin(), l.end(), [&](auto le, auto re)
 				{
-					if (ordered(rules, l))
-						return l[l.size() / 2];
-				}
-			});
+					return !rules[re].contains(le);
+				});
+			return l[l.size() / 2];
+		});
 	return std::make_pair(rv1, rv2);
 }
 

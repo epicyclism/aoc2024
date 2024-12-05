@@ -20,16 +20,21 @@ class timer
 {
 private:
 	std::string_view v_;
+	bool cancel_;
 	decltype(std::chrono::high_resolution_clock().now()) start_;
 	timer(timer&) = delete;
-
 public:
-	timer(std::string_view v) : v_ { v }, start_{ std::chrono::high_resolution_clock().now()}
+	timer(std::string_view v) : v_{ v }, cancel_{ false }, start_ { std::chrono::high_resolution_clock().now() }
 	{
 	}
 	~timer()
 	{
 		auto end = std::chrono::high_resolution_clock().now();
-		std::cout << "(" << v_ << ": " << std::chrono::duration_cast<std::chrono::microseconds>(end - start_).count() << "us)\n";
+		if(!cancel_)
+			std::cout << "(" << v_ << ": " << std::chrono::duration_cast<std::chrono::microseconds>(end - start_).count() << "us)\n";
+	}
+	void cancel()
+	{
+		cancel_ = true;
 	}
 };
