@@ -1,10 +1,7 @@
 #include <iostream>
 #include <vector>
-#include <map>
-#include <set>
 #include <string>
 #include <algorithm>
-#include <ranges>
 
 #include "ctre_inc.h"
 #include "linear_set.h"
@@ -12,7 +9,7 @@
 
 auto get_input()
 {
-	std::vector<linear_set<int>> rules(100);
+	std::vector<linear_set<unsigned char>> rules(100);
 	std::vector<std::vector<unsigned char>> lists;
 	std::string ln;
 	while(std::getline(std::cin, ln))
@@ -40,11 +37,8 @@ bool ordered (auto const& rules, auto const& l)
 	{
 		for(int m{n + 1}; m < l.size(); ++m)
 		{
-//			if(rules.contains(l[n]))
-//			{
-				if(rules[l[n]].contains(l[m]))
-					return false;
-//			}
+			if(rules[l[n]].contains(l[m]))
+				return false;
 		}
 	}
 	return true;

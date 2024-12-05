@@ -1,49 +1,45 @@
 #include <iostream>
 #include <vector>
-#include <map>
-#include <set>
 #include <string>
 #include <algorithm>
 #include <execution>
 
 #include "ctre_inc.h"
+#include "linear_set.h"
 #include "timer.h"
 
 auto get_input()
 {
-	std::map<int, std::set<int>> rules;
-	std::vector<std::vector<int>> lists;
+	std::vector<linear_set<unsigned char>> rules(100);
+	std::vector<std::vector<unsigned char>> lists;
 	std::string ln;
-	while(std::getline(std::cin, ln))
+	while (std::getline(std::cin, ln))
 	{
-		if(ln.empty())
+		if (ln.empty())
 			break;
-		if(auto[m, a, b] = ctre::match<"(\\d+)\\|(\\d+)">(ln); m)
+		if (auto [m, a, b] = ctre::match<"(\\d+)\\|(\\d+)">(ln); m)
 		{
-			rules[b.to_number<int>()].emplace( a.to_number<int>());
+			rules[b.to_number<int>()].emplace_back(a.to_number<unsigned char>());
 		}
 	}
-	while(std::getline(std::cin, ln))
+	while (std::getline(std::cin, ln))
 	{
 		lists.push_back({});
 		for (auto m : ctre::search_all<"(\\d+)">(ln))
-			lists.back().emplace_back(m.to_number<int>());
+			lists.back().emplace_back(m.to_number<unsigned char>());
 	}
 
 	return std::make_pair(rules, lists);
 }
 
-bool ordered (auto const& rules, auto const& l)
+bool ordered(auto const& rules, auto const& l)
 {
-	for(int n{0}; n < l.size(); ++n)
+	for (int n{ 0 }; n < l.size(); ++n)
 	{
-		for(int m{n + 1}; m < l.size(); ++m)
+		for (int m{ n + 1 }; m < l.size(); ++m)
 		{
-			if(rules.contains(l[n]))
-			{
-				if(rules.at(l[n]).contains(l[m]))
-					return false;
-			}
+			if (rules[l[n]].contains(l[m]))
+				return false;
 		}
 	}
 	return true;
