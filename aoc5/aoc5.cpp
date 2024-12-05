@@ -47,9 +47,10 @@ bool ordered (auto const& rules, auto const& l)
 	return true;
 }
 
-std::pair<int, int> pt12(auto const& rules, auto& lists)
+#if 0
+std::pair<int, int> pt12o(auto const& rules, auto& lists)
 {
-	timer t("pt12");
+	timer t("pt12o");
 	int rv1{0};
 	int rv2{0};
 
@@ -60,7 +61,6 @@ std::pair<int, int> pt12(auto const& rules, auto& lists)
 		else
 		{
 			std::sort(l.begin(), l.end(), [&](auto le, auto re)
-//			std::nth_element(l.begin(), l.begin() + l.size() / 2, l.end(), [&](auto le, auto re)
 				{
 					return !rules[re].test(le);
 				});
@@ -69,10 +69,10 @@ std::pair<int, int> pt12(auto const& rules, auto& lists)
 	}
 	return std::make_pair(rv1, rv2);
 }
-
-std::pair<int, int> pt12b(auto const& rules, auto& lists)
+#endif
+std::pair<int, int> pt12(auto const& rules, auto const& lists)
 {
-	timer t("pt12b");
+	timer t("pt12");
 	int rv1{ 0 };
 	int rv2{ 0 };
 
@@ -87,13 +87,11 @@ std::pair<int, int> pt12b(auto const& rules, auto& lists)
 				bsl.set(e);
 			for (auto e : l)
 			{
-				bsl.set(e, false);
 				if((rules[e] & bsl).count() == l.size() / 2)
 				{
 					rv2 += e;
 					break;
 				}
-				bsl.set(e);
 			}
 		}
 	}
@@ -103,10 +101,10 @@ std::pair<int, int> pt12b(auto const& rules, auto& lists)
 int main()
 {
 	auto [rules, lists] = get_input();
+//	auto[p1, p2] = pt12o(rules, lists);
+//	std::cout << "pt1 = " << p1 << "\n";
+//	std::cout << "pt2 = " << p2 << "\n";
 	auto[p1, p2] = pt12(rules, lists);
 	std::cout << "pt1 = " << p1 << "\n";
 	std::cout << "pt2 = " << p2 << "\n";
-	auto[p1t, p2t] = pt12b(rules, lists);
-	std::cout << "pt1 = " << p1t << "\n";
-	std::cout << "pt2 = " << p2t << "\n";
 }
