@@ -37,6 +37,8 @@ bool ordered (auto const& rules, auto const& l)
 	{
 		for(int m{n + 1}; m < l.size(); ++m)
 		{
+			if(l[n] > 99)
+				std::cout << l[n] << " oops\n";
 			if(rules[l[n]].contains(l[m]))
 				return false;
 		}
@@ -56,7 +58,8 @@ std::pair<int, int> pt12(auto const& rules, auto& lists)
 			rv1 += l[l.size() / 2];
 		else
 		{
-			std::nth_element(l.begin(), l.begin() + l.size() / 2, l.end(), [&](auto le, auto re)
+			std::sort(l.begin(), l.end(), [&](auto le, auto re)
+//			std::nth_element(l.begin(), l.begin() + l.size() / 2, l.end(), [&](auto le, auto re)
 				{
 					return !rules[re].contains(le);
 				});
