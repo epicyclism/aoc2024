@@ -12,8 +12,8 @@
 
 auto get_input()
 {
-	std::map<int, linear_set<int>> rules;
-	std::vector<std::vector<int>> lists;
+	std::vector<linear_set<int>> rules(100);
+	std::vector<std::vector<unsigned char>> lists;
 	std::string ln;
 	while(std::getline(std::cin, ln))
 	{
@@ -21,14 +21,14 @@ auto get_input()
 			break;
 		if(auto[m, a, b] = ctre::match<"(\\d+)\\|(\\d+)">(ln); m)
 		{
-			rules[b.to_number<int>()].emplace_back( a.to_number<int>());
+			rules[b.to_number<int>()].emplace_back( a.to_number<unsigned char>());
 		}
 	}
 	while(std::getline(std::cin, ln))
 	{
 		lists.push_back({});
 		for (auto m : ctre::search_all<"(\\d+)">(ln))
-			lists.back().emplace_back(m.to_number<int>());
+			lists.back().emplace_back(m.to_number<unsigned char>());
 	}
 
 	return std::make_pair(rules, lists);
@@ -40,11 +40,11 @@ bool ordered (auto const& rules, auto const& l)
 	{
 		for(int m{n + 1}; m < l.size(); ++m)
 		{
-			if(rules.contains(l[n]))
-			{
-				if(rules.at(l[n]).contains(l[m]))
+//			if(rules.contains(l[n]))
+//			{
+				if(rules[l[n]].contains(l[m]))
 					return false;
-			}
+//			}
 		}
 	}
 	return true;
@@ -64,7 +64,7 @@ std::pair<int, int> pt12(auto const& rules, auto& lists)
 		{
 			std::nth_element(l.begin(), l.begin() + l.size() / 2, l.end(), [&](auto le, auto re)
 				{
-					return !(rules.contains(re) && rules.at(re).contains(le));
+					return !rules[re].contains(le);
 				});
 			rv2 += l[l.size() / 2];
 		}
