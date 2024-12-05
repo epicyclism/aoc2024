@@ -7,11 +7,12 @@
 #include <ranges>
 
 #include "ctre_inc.h"
+#include "linear_set.h"
 #include "timer.h"
 
 auto get_input()
 {
-	std::map<int, std::set<int>> rules;
+	std::map<int, linear_set<int>> rules;
 	std::vector<std::vector<int>> lists;
 	std::string ln;
 	while(std::getline(std::cin, ln))
@@ -20,7 +21,7 @@ auto get_input()
 			break;
 		if(auto[m, a, b] = ctre::match<"(\\d+)\\|(\\d+)">(ln); m)
 		{
-			rules[b.to_number<int>()].emplace( a.to_number<int>());
+			rules[b.to_number<int>()].emplace_back( a.to_number<int>());
 		}
 	}
 	while(std::getline(std::cin, ln))
