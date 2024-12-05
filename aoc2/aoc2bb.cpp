@@ -26,6 +26,7 @@ bool safe(int64_t a)
 {
 	uint64_t zero_mask = 0xffffffffffffffff;
 	uint64_t zero_test = 0xff00000000000000;
+
 	while(!(a & zero_test))
 	{
 		zero_mask >>= 8;
@@ -46,7 +47,7 @@ bool safe(int64_t a)
 
 auto pt12(auto const& in)
 {
-//	timer t("p12");
+	timer t("p12");
 	int cnt1{0};
 	int cnt2{0};
 	for (auto v : in)
@@ -58,17 +59,14 @@ auto pt12(auto const& in)
 		else
 		{
 			auto t = v >> 8;
-			if (safe(t) ||
+			cnt2 += safe(t) ||
 				safe((v & 0x00000000000000ff) | (t & 0xffffffffffffff00)) ||
 				safe((v & 0x000000000000ffff) | (t & 0xffffffffffff0000)) ||
 				safe((v & 0x0000000000ffffff) | (t & 0xffffffffff000000)) ||
 				safe((v & 0x00000000ffffffff) | (t & 0xffffffff00000000)) ||
 				safe((v & 0x000000ffffffffff) | (t & 0xffffff0000000000)) ||
 				safe((v & 0x0000ffffffffffff) | (t & 0xffff000000000000)) ||
-				safe( v & 0x00ffffffffffffff))
-			{
-				++cnt2;
-			}
+				safe(v & 0x00ffffffffffffff);
 		}
 	}
 	return std::make_pair(cnt1, cnt1 + cnt2);
@@ -76,6 +74,7 @@ auto pt12(auto const& in)
 
 int main()
 {
+	timer t("all");
 	auto in { get_input()};
 	auto[p1, p2] = pt12(in);
 	std::cout << "pt1 = " << p1 << "\n";

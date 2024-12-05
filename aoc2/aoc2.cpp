@@ -23,7 +23,7 @@ auto get_input()
 
 auto pt12(auto const& in)
 {
-//	timer t("pt12");
+	timer t("pt12");
 	int cnt1{0};
 	int cnt2{0};
 	std::vector<int> wsp;
@@ -61,6 +61,7 @@ auto pt12(auto const& in)
 
 int main()
 {
+	timer t("all");
 	auto in { get_input()};
 	auto[p1, p2] = pt12(in);
 	std::cout << "pt1 = " << p1 << "\n";
