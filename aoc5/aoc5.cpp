@@ -49,13 +49,6 @@ bool ordered (auto const& rules, auto const& l)
 	return true;
 }
 
-void print_c(auto const& c)
-{
-	for (auto e : c)
-		std::cout << e << " ";
-	std::cout << "\n";
-}
-
 std::pair<int, int> pt12(auto const& rules, auto& lists)
 {
 	timer t("pt12");
@@ -68,32 +61,10 @@ std::pair<int, int> pt12(auto const& rules, auto& lists)
 			rv1 += l[l.size() / 2];
 		else
 		{
-#if 1
-			while (std::next_permutation(l.begin(), l.end(), [&](auto le, auto re)
-				{
-					return !(rules.contains(re) && rules.at(re).contains(le));
-				}))
-			{
-				if (ordered(rules, l))
-				{
-					std::cout << "Got 1\n";
-					break;
-				}
-
-			}
-#else
-#if 1
 			std::nth_element(l.begin(), l.begin() + l.size() / 2, l.end(), [&](auto le, auto re)
 				{
 					return !(rules.contains(re) && rules.at(re).contains(le));
 				});
-#else
-			std::sort(l.begin(), l.end(), [&](auto le, auto re)
-			{
-				return !(rules.contains(re) && rules.at(re).contains(le));
-			});
-#endif
-#endif
 			rv2 += l[l.size() / 2];
 		}
 	}
