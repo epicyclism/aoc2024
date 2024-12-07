@@ -31,7 +31,7 @@ bool eval(std::vector<uint64_t> const& v, size_t n, uint64_t val)
     return eval(v, n + 1, val * c) || eval(v, n + 1, val + c);
 }
 
-uint64_t ashift(uint64_t a, uint64_t b)
+inline uint64_t ashift(uint64_t a, uint64_t b)
 {
 	while(b)
 	{
