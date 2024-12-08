@@ -60,7 +60,7 @@ uint64_t pt1(auto const& in)
     });
 }
 
-int64_t pt2(auto const& in)
+uint64_t pt2(auto const& in)
 {
 	timer t ("p2");
     return std::reduce(in.begin(), in.end(), 0ULL, [](auto a, auto& v)
