@@ -39,7 +39,7 @@ std::vector<int64_t> expand(std::string const& s)
 auto compact(std::vector<int64_t>& v)
 {
 	if(v.size () < 2)
-		return v.end();
+		return;
 	auto b { v.begin()};
 	auto e { v.end() - 1};
 	while (b < e)
@@ -56,11 +56,6 @@ auto compact(std::vector<int64_t>& v)
 			--e;
 		}
 	}
-	while(*b == -1)
-		--b;
-//	for(auto x: v)
-//		std::cout << x << "\n";
-	return b + 1;
 }
 
 int64_t checksum(std::vector<int64_t> const& v)
@@ -76,15 +71,77 @@ int64_t pt1(std::string const& l)
 {
 	timer t ("pt1");
 	auto ev{expand(l)};
-	ev.erase(compact(ev), ev.end());
+	compact(ev), ev.end();
 	return checksum(ev);
+}
+
+auto find_file(std::vector<int64_t>& v, std::vector<int64_t>::iterator re)
+{
+	while (*re == -1 && re != v.begin())
+		--re;
+	auto e{ re };
+	auto id{ *re };
+	while (*re == id && re != v.begin())
+		--re;
+	if(re != v.begin())
+		return std::make_pair(re + 1, e + 1);
+	return std::make_pair(re, e + 1);
+}
+
+auto find_space(std::vector<int64_t>& v, size_t sz, std::vector<int64_t>::iterator lim)
+{
+	auto bs{ v.begin() };
+	while (bs < lim)
+	{
+		if (*bs == -1)
+		{
+			auto es{ bs + 1 };
+			while (es != v.end())
+			{
+				if (*es != -1)
+				{
+					if ((es - bs) >= sz)
+						return std::make_pair(bs, es);
+					else
+					{
+						bs = es;
+						break;
+					}
+				}
+				++es;
+			}
+		}
+		++bs;
+	}
+	return std::make_pair(bs, bs);
+}
+
+void compact2(std::vector<int64_t>& v)
+{
+	if (v.size() < 2)
+		return ;
+	auto bf{ v.end() };
+	auto ef{ v.end() - 1};
+	while (bf != v.begin())
+	{
+		std::tie(bf, ef) = find_file(v, bf - 1);
+		auto [bs, es] = find_space(v, ef - bf, bf);
+		if (bs != es)
+		{
+			for(auto b{bf}; b != ef; ++b)
+			{
+				std::swap(*b, *bs);
+				++bs;
+			}
+		}
+	}
 }
 
 int64_t pt2(std::string const& l)
 {
 	timer t ("pt2");
 	auto ev{expand(l)};
-	ev.erase(compact(ev), ev.end());
+	compact2(ev);
 	return checksum(ev);
 }
 
