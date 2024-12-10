@@ -76,7 +76,7 @@ int pt1(auto const& in)
 	return r;
 }
 
-int64_t pt2(auto const& in)
+int pt2(auto const& in)
 {
 	timer t("pt2");
 	int r { 0 };
