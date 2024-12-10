@@ -8,5 +8,6 @@ add_executable(aoc7r aoc7r.cpp)
 target_include_directories(aoc7r PUBLIC ../common)
 target_link_libraries(aoc7r PRIVATE ctre::ctre)
 
-add_executable(aoc7_reddit aoc7_reddit.cpp)
-target_include_directories(aoc7_reddit PUBLIC ../common)
+add_executable(aoc7rd aoc7rd.cpp)
+target_include_directories(aoc7rd PUBLIC ../common)
+target_link_libraries(aoc7rd PRIVATE ctre::ctre)

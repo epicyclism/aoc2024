@@ -262,4 +262,8 @@ public:
     {
         return data_.size();
     }
+    T value(vertex_id_t v) const
+    {
+        return data_[v];
+    }
 };
