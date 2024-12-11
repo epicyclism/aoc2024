@@ -77,6 +77,7 @@ std::pair<int64_t, int64_t> pt12(auto in)
         }
         m.swap(tm);
     }
+//    std::cout << m.size() << "\n";
  	return {p1, std::accumulate(m.begin(), m.end(), 0LL, [](auto s, auto& me){ return me.second + s;})};
 }
 
