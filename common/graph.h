@@ -262,6 +262,10 @@ public:
     {
         return data_.size();
     }
+    size_t stride () const
+    {
+        return stride_;
+    }
     T value(vertex_id_t v) const
     {
         return data_[v];
