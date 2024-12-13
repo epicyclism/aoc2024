@@ -38,20 +38,18 @@ std::pair<int, int> trace_region(auto& gd, vertex_id_t s, std::vector<bool>& vis
     while (!q.empty())
     {
         auto u = q.front(); q.pop();
+		int pp = 4;
         for (auto e : gd[u])
         {
-			if(gd.value(e) == us)
+			if (!visited[e])
 			{
-				if (!visited[e])
-				{
-					++a;
-					visited[e] = true;
+				++a;
+				visited[e] = true;
 					q.push(e);
-				}
 			}
-			else
-				++p;
+			--pp;
         }
+		p += pp;
     }
 	return {a, p};
 }
@@ -113,7 +111,7 @@ int pt1(auto const& in)
 {
 	timer t("pt1");
 	std::vector<std::pair<int, int>> regions;
-	grid_direct gd(in.second, in.first, [&](auto f, auto t){return true;});
+	grid_direct gd(in.second, in.first, [&](auto f, auto t){return in.second[f] == in.second[t];});
 	std::vector<bool> visited(gd.size());
 	for(vertex_id_t v{0}; v < gd.size(); ++v)
 	{
