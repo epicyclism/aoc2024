@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-//#include <algorithm>
-
+#include <algorithm>
+#include <functional>
 #include <bitset>
 
 #include "ctre_inc.h"
@@ -93,23 +93,27 @@ int pt1(auto v)
 	return q1 * q2 * q3 * q0;
 }
 
+// *******************************
+// find out the shape of the tree by intuition, trial and error
+// and asumming significant symmetry abou the vertical centre
+// now know the tree has a rectangular box and is 
+//
+constexpr std::string_view line = "************************";
+
 int64_t pt2(auto v)
 {
 	timer t("pt2");	
-	std::bitset<103*101> bl;
-	std::bitset<103*101> br;
+	std::array<char, 101 * 103> bs;
 	int cnt = 1;
 	while(1)
 	{
-		bl.reset();
-		br.reset();
+		bs.fill('.');
 		for(auto& r: v)
 		{
 			r.step();
-			bl.set(r.x_ + r.y_ * 101);
-			br.set(100 - r.x_ + r.y_ * 101 );
+			bs[r.x_ + r.y_ * 101] = '*';
 		}
-		if((bl&br).count() > 78) // found this by trial and error
+		if(std::search(bs.begin(), bs.begin() + 68 * 101, std::boyer_moore_searcher(line.begin(), line.end())) != bs.begin() + 68 * 101)
 			break;
 		++cnt;
 	}
