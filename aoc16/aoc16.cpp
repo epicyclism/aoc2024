@@ -84,14 +84,17 @@ auto bfs_x(auto const& g, vertex_id_t from, vertex_id_t to, size_t tgt)
 		int         dir_;
 		size_t		dist_;
 		std::bitset<20000> visited_;
+		q_t(vertex_id_t v, int dir, size_t d) : v_{v}, dir_{dir}, dist_{d}
+		{ }
+		q_t(vertex_id_t v, int dir, size_t d, std::bitset<20000>& vs) : v_{v}, dir_{dir}, dist_{d}, visited_{vs}
+		{ }
 	};
 	std::bitset<20000> all;
 	std::vector<size_t> distances(g.size(), tgt);
 	std::queue<q_t> q;
-	q_t qt{ from, 2, 0};
-	qt.visited_.set(from);
+	q.emplace(from, 2, 0);
+	q.back().visited_.set(from);
 	distances[from] = 0;
-	q.push(qt);
 	while (!q.empty())
 	{
 		auto p = q.front(); q.pop();
@@ -107,9 +110,8 @@ auto bfs_x(auto const& g, vertex_id_t from, vertex_id_t to, size_t tgt)
 				auto ed{ p.dist_ + cost_swivel(d, p.dir_) };
 				if (ed <= distances[e] + 1000)
 				{
-					q_t qt{ e, d, ed, p.visited_ };
-					qt.visited_.set(e);
-					q.push(qt);
+					q.emplace(e, d, ed, p.visited_);
+					q.back().visited_.set(e);
 					distances[e] = ed;
 				}
 			}
