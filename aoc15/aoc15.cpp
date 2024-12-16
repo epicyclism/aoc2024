@@ -1,13 +1,14 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <string>
 #include <tuple>
-#include <algorithm>
-#include <numeric>
 
 #define MDSPAN_USE_PAREN_OPERATOR 1
 #include <experimental/mdspan>
 namespace stdex = std::experimental;
+
+#include "timer.h"
 
 auto get_input()
 {
@@ -79,12 +80,12 @@ pt move1(pt p, pt d, auto& md)
 	return p;
 }
 
-int64_t compute_gps1(auto& md)
+template<char C> int64_t compute_gps(auto& md)
 {
 	int64_t t{0};
 	for(int64_t y{0}; y < md.extent(0); ++y)
 		for(int64_t x{0}; x < md.extent(1) ; ++x)
-			if(md(y, x) == 'O')
+			if(md(y, x) == C)
 				t += (x + 100 * y);
 	return t;
 }
@@ -104,6 +105,7 @@ void print(auto& md)
 
 int64_t pt1(std::vector<char> w, int s, std::string const& m)
 {
+	timer t("pt1");
 	stdex::mdspan md(w.data(), s, s);
 	pt p;
 	for(int x = 0 ; x < s; ++x)
@@ -118,9 +120,8 @@ got:
 	for(auto mv : m)
 		p = move1(p, from_dir(mv), md);
 	
-	return compute_gps1(md);
+	return compute_gps<'O'>(md);
 }
-
 
 std::vector<char> expand(std::vector<char> const& v)
 {
@@ -152,16 +153,6 @@ std::vector<char> expand(std::vector<char> const& v)
 		}
 	}
 	return vr;
-}
-
-int64_t compute_gps2(auto& md)
-{
-	int64_t t{0};
-	for(uint64_t y{0}; y < md.extent(0); ++y)
-		for(uint64_t x{0}; x < md.extent(1) ; ++x)
-			if(md(y, x) == '[')
-				t += (x + 100 * y);
-	return t;
 }
 
 bool can_move( pt d, auto& md, auto& to_move)
@@ -266,6 +257,7 @@ pt move2(pt p, pt d, auto& md)
 
 int64_t pt2(std::vector<char> const& w, int s, std::string const& m)
 {
+	timer t("pt2");
 	auto ww{expand(w)};
 	stdex::mdspan md(ww.data(), s, s * 2);
 	pt p;
@@ -281,7 +273,7 @@ got:
 	for(auto mv : m)
 		p = move2(p, from_dir(mv), md);
 	
-	return compute_gps2(md);
+	return compute_gps<'['>(md);
 }
 
 int main()

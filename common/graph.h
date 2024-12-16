@@ -271,3 +271,56 @@ public:
         return data_[v];
     }
 };
+
+// plain grid wrap for mazes etc.
+// provide a fn to determine whether a path exists from adjacent otherwise valid nodes.
+// fn of form bool V(T from, T to)
+// where from and to are grid cell contents
+// always returns 4 vertices, -1 for no connection;
+//
+template<typename T, typename V> class grid_4
+{
+private:
+    const std::vector<T>& data_;
+    const size_t stride_;
+    mutable std::vector<bool> visited_;
+    const V vp_;
+public:
+    grid_4(std::vector<T> const& d, size_t s, V vp) : data_{ d }, stride_{s}, vp_{vp}, visited_(d.size())
+    {}
+
+    std::array<vertex_id_t, 4> operator[](vertex_id_t v) const
+    {
+        std::array<vertex_id_t, 4> rv;
+        rv.fill(-1);
+        if(!visited_[v])
+        {
+            // left
+            if (v % stride_ != 0 && vp_(data_[v], data_[v - 1]))
+                rv[0] = v - 1;
+            // up
+            if (v > stride_ && vp_(data_[v], data_[v - stride_]))
+                rv[2] = v - stride_;
+            // right
+            if (v % stride_ != stride_ - 1 && vp_(data_[v], data_[v + 1]))
+                rv[1] = v + 1;
+            // down
+            if (v < data_.size() - stride_ && vp_(data_[v], data_[v + stride_]))
+                rv[3] = v + stride_;
+            visited_[v] = true;
+        }
+        return rv;
+    }
+    size_t size() const
+    {
+        return data_.size();
+    }
+    size_t stride() const
+    {
+        return stride_;
+    }
+    std::vector<T> const& data() const
+    {
+        return data_;
+    }
+};
