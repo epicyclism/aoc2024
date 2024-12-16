@@ -3,12 +3,19 @@
 //
   
 #include <vector>
+#include <array>
 #include <queue>
 #include <tuple>
 #include <concepts>
 #include <type_traits>
 
 using vertex_id_t = std::size_t;
+constexpr vertex_id_t invalid_vertex_id = vertex_id_t(-1);
+
+inline bool valid_vertex_id(vertex_id_t v)
+{
+    return v != invalid_vertex_id;
+}
 
 template<typename GraphContainer> 
 concept graph_container = requires (vertex_id_t v, GraphContainer G)
@@ -283,32 +290,27 @@ template<typename T, typename V> class grid_4
 private:
     const std::vector<T>& data_;
     const size_t stride_;
-    mutable std::vector<bool> visited_;
     const V vp_;
 public:
-    grid_4(std::vector<T> const& d, size_t s, V vp) : data_{ d }, stride_{s}, vp_{vp}, visited_(d.size())
+    grid_4(std::vector<T> const& d, size_t s, V vp) : data_{ d }, stride_{s}, vp_{vp}
     {}
 
     std::array<vertex_id_t, 4> operator[](vertex_id_t v) const
     {
         std::array<vertex_id_t, 4> rv;
-        rv.fill(-1);
-        if(!visited_[v])
-        {
-            // left
-            if (v % stride_ != 0 && vp_(data_[v], data_[v - 1]))
-                rv[0] = v - 1;
-            // up
-            if (v > stride_ && vp_(data_[v], data_[v - stride_]))
-                rv[2] = v - stride_;
-            // right
-            if (v % stride_ != stride_ - 1 && vp_(data_[v], data_[v + 1]))
-                rv[1] = v + 1;
-            // down
-            if (v < data_.size() - stride_ && vp_(data_[v], data_[v + stride_]))
-                rv[3] = v + stride_;
-            visited_[v] = true;
-        }
+        rv.fill(invalid_vertex_id);
+        // left
+        if (v % stride_ != 0 && vp_(data_[v], data_[v - 1]))
+            rv[0] = v - 1;
+        // up
+        if (v > stride_ && vp_(data_[v], data_[v - stride_]))
+            rv[1] = v - stride_;
+        // right
+        if (v % stride_ != stride_ - 1 && vp_(data_[v], data_[v + 1]))
+            rv[2] = v + 1;
+        // down
+        if (v < data_.size() - stride_ && vp_(data_[v], data_[v + stride_]))
+            rv[3] = v + stride_;
         return rv;
     }
     size_t size() const

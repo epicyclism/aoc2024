@@ -3,9 +3,10 @@
 #include <string>
 #include <tuple>
 #include <algorithm>
-#include <numeric>
+#include <bitset>
 
 #include "graph.h"
+#include "timer.h"
 
 auto get_input()
 {
@@ -30,98 +31,108 @@ auto get_input()
 	return std::make_tuple(v, str, S, E);
 }
 
-struct vertex_t
+inline int cost_swivel(int df, int dt)
 {
-	vertex_id_t to_;
-	int wt_;
-	vertex_t(vertex_id_t to, int w) : to_{to}, wt_{w}
-	{}
-};
-
-using adjacency_list_t = std::vector<std::vector<vertex_t>>;
-
-int cost_swivel(int df, int dt)
-{
-	return std::abs(dt - df) * 1000 + 1;
+	if (df == dt)
+		return 1;
+	return std::abs(dt - df) == 2 ? 1000000 : 1001;
 }
 
-int count_out(auto const& a)
+auto dijkstra(auto const& g, vertex_id_t from, vertex_id_t to)
 {
-	return std::count_if(a.begin(), a.end(), [](auto v){ return v != -1;});
-}
-
-std::pair<vertex_id_t, int> first(auto const& a)
-{
-	for(int d{0}; d < a.size(); ++d)
-		if(a[d] != -1)
-			return {a[d], d};
-	return {-1, 0};
-}
-
-// W, N, E, S : 0, 1, 2, 3
-void follow(auto& g, auto const& gd, vertex_id_t f, int d, int wt)
-{
-	auto t{f};
-	auto a { gd[t]};
-	while(count_out(a) == 1)
+	struct pq_t
 	{
-		auto[tt, dt] = first(a);
-		t = tt;
-		wt += cost_swivel(d, dt);
-		d = dt;
-		a = gd[t];
-	}
-//	std::cout << f << " " << t << " " << wt << "\n";
-	add_edge_undirected(g, f, t, wt);
-#if 1
-	for(int nd{0}; nd < a.size(); ++nd)
+		vertex_id_t v_;
+		int         dir_;
+	};
+	std::vector<int> distance(g.size(), -1);
+	auto pq_t_cmp = [&](auto& l, auto& r) { return distance[l.v_] < distance[r.v_]; };
+	std::priority_queue<pq_t, std::vector<pq_t>, decltype(pq_t_cmp)> q(pq_t_cmp);
+	q.push({ from, 2 });
+	distance[from] = 0;
+	while (!q.empty())
 	{
-		if(a[nd] != -1)
-			follow(g, gd, a[nd], nd, cost_swivel(d, nd));
-	}
-#endif
-}
-
-void print_graph(adjacency_list_t const& al)
-{
-	for(size_t v{ 0}; v < al.size(); ++v)
-	{
-		if(!al[v].empty())
+		auto p = q.top(); q.pop();
+		int d{ 0 };
+		for (auto e : g[p.v_])
 		{
-			std::cout << v << " -> " ;
-			for(auto vv : al[v])
+			if (valid_vertex_id(e) && (distance[e] == -1 || distance[e] > distance[p.v_] + cost_swivel(d, p.dir_)))
 			{
-				std::cout << "(" << vv.to_ << ", " << vv.wt_ << "), ";
+				distance[e] = distance[p.v_] + cost_swivel(d, p.dir_);
+				q.push({ e, d });
 			}
-			std::cout << "\n";
+			++d;
 		}
 	}
-}
 
-adjacency_list_t make_graph( auto const& in, size_t str, size_t S)
-{
-	adjacency_list_t g;
-	grid_4 gd(in, str, [](auto f, auto t){return t != '#';});
-	follow(g, gd, S, 0, 0);
-	print_graph(g);
-	return g;
+	return distance[to];
 }
 
 int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
 {
-	std::cout << in.size() << " " << str << " " << S << " " << E << "\n";
-	auto g{make_graph(in, str, S)};
-	return 0;
+	timer t("pt1");
+	grid_4 g(in, str, [](auto f, auto t) {return t != '#'; });
+
+	return dijkstra(g, S, E);
 }
 
-int64_t pt2(auto const& in, size_t str)
+auto bfs_x(auto const& g, vertex_id_t from, vertex_id_t to, size_t tgt)
 {
-	return 0;
+	struct q_t
+	{
+		vertex_id_t v_;
+		int         dir_;
+		size_t		dist_;
+		std::bitset<20000> visited_;
+	};
+	std::bitset<20000> all;
+	std::vector<size_t> distances(g.size(), tgt);
+	std::queue<q_t> q;
+	q_t qt{ from, 2, 0};
+	qt.visited_.set(from);
+	distances[from] = 0;
+	q.push(qt);
+	while (!q.empty())
+	{
+		auto p = q.front(); q.pop();
+		if (p.v_ == to && p.dist_ == tgt)
+		{
+			all |= p.visited_;
+		}
+		int d{ 0 };
+		for (auto e : g[p.v_])
+		{
+			if (valid_vertex_id(e) && !p.visited_.test(e))
+			{
+				auto ed{ p.dist_ + cost_swivel(d, p.dir_) };
+				if (ed <= distances[e] + 1000)
+				{
+					q_t qt{ e, d, ed, p.visited_ };
+					qt.visited_.set(e);
+					q.push(qt);
+					distances[e] = ed;
+				}
+			}
+			++d;
+		}
+	}
+
+	return all.count();
+}
+
+int64_t pt2(auto const& in, size_t str, size_t S, size_t E, size_t tgt)
+{
+	timer t("pt2");
+	grid_4 g(in, str, [](auto f, auto t) {return t != '#'; });
+
+	return bfs_x(g, S, E, tgt);
 }
 
 int main()
 {
 	auto [v, s, S, E] = get_input();
-	std::cout << "pt1 = " << pt1(v, s, S, E) << "\n";
-	std::cout << "pt2 = " << pt2(v, s) << "\n";
+	auto p1{ pt1(v, s, S, E) };
+	std::cout << "pt1 = " << p1 << "\n";
+	auto p2{ pt2(v, s, S, E, p1) };
+	std::cout << "pt2 = " << p2 << "\n";
 }
