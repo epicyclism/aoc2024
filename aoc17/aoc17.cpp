@@ -6,6 +6,7 @@
 #include <ranges>
 
 #include "ctre_inc.h"
+#include "timer.h"
 
 struct regs
 {
@@ -110,98 +111,36 @@ auto get_input()
 	return std::make_pair(r, program);
 }
 
-void pt1(auto r, auto const& p)
+std::string pt1(auto r, auto const& p)
 {
+	timer t("pt1");
+	std::string s;
+	s.reserve(31);
 	r.execute(p);
 	for(auto c: r.out_)
-		std::cout << +c << ",";
-}
-
-int64_t pt20(auto r, auto const& p)
-{
-//	int64_t sd{0x111111111111};
-//	int64_t sd{0x349249249249};
-//	int64_t sd{0x174bdf4};
-	int64_t sd{0x40d4bdf4};
-//	sd += 0xb613;
-//	sd += 0xcf7598;
-//	sd += 0xddd0;
-//	sd += 0x68e170;
-	for(int64_t n = 0; n < 0xffffff; ++n)
 	{
-		int64_t A = sd + (n << 27);
-		r.A_ = A;
-		r.execute(p);
-		if(std::equal(r.out_.begin(), r.out_.begin() + 16, p.begin(), p.begin() + 16))
-		{
-			std::cout << std::hex << A << " " << n << " " ;
-			for(auto c: r.out_)
-				std::cout << +c << ",";
-			std::cout << std::dec << "\n";
-			return A;
-		}
+		if(!s.empty())
+			s.push_back(',');
+		s.push_back(c + '0');
 	}
-	return 0;
+	return s;
 }
 
-int64_t pt21(auto r, auto const& p)
+bool eval(int64_t k, auto& r, auto const& p, size_t cmp, int64_t& a)
 {
-//	int64_t sd{0xbdf4};
-	int64_t sd{0};
-	int64_t shift { 0 };
-	uint64_t cnt { 2 };
-	while(cnt != 16)
+	for (int64_t n{ 0 }; n < 64; ++n)
 	{
-		auto tmp{ cnt };
-		for (int64_t n{0}; n < 0xffff; ++n)
+		r.A_ = n + k;
+		r.execute(p);
+		if(r.out_.size() >= p.size() - cmp && 
+			std::equal(p.begin() + cmp, p.end(), r.out_.begin()))
 		{
-			int64_t A = sd + (n << shift);
-			r.A_ = A;
-			r.execute(p);
-			if(r.out_.size() >= cnt && std::equal(r.out_.begin(), r.out_.begin() + cnt, p.begin(), p.begin() + cnt))
+			if(cmp == 0)
 			{
-				std::cout << std::hex << A << " " << n << " " ;
-				for(auto c: r.out_)
-					std::cout << +c << ",";
-				sd = A;
-				std::cout << "\n" << std::oct << sd << std::dec << "\n";
-				++cnt;
-				shift += 3;
-				sd &= (1LL << shift) - 1;
-				break;
+				a = n + k;
+				return true;
 			}
-		}
-		if (tmp == cnt)
-		{
-			break;
-		}
-	}
-	return sd;
-}
-
-bool eval(int64_t f, int64_t np, auto& r, auto const& p, size_t st, int64_t& res)
-{
-	f &= (1LL << np) - 1;
-	for (int64_t n{ 0 }; n < 0x1ff; ++n)
-	{
-		r.A_ = f + (n << np);
-		r.execute(p);
-		if (r.out_.size() > p.size())
-			return false;
-		auto [a, b] = std::mismatch(r.out_.begin(), r.out_.end(), p.begin());
-		auto ml = std::distance(p.begin(), b);
-		if (ml == p.size())
-		{
-			res = f + (n << np);
-			return true;
-		}
-		if(std::distance(p.begin(), b) > st)
-		{
-//			std::cout << std::hex << f + (n << np) << " ";
-//			for (auto c : r.out_)
-//				std::cout << +c << ",";
-//			std::cout << std::dec << "\n";
-			if (eval(f + (n << np), np + 6, r, p, st + 2, res))
+			if (eval((n + k) << 6, r, p, cmp - 2, a))
 				return true;
 		}
 	}
@@ -210,19 +149,17 @@ bool eval(int64_t f, int64_t np, auto& r, auto const& p, size_t st, int64_t& res
 
 int64_t pt2(auto r, auto const& p)
 {
+	timer t("pt2");
 	int64_t res{ 0 };
-	eval(res, 0, r, p, 0, res);
+	eval(0, r, p, p.size() - 2, res);
 	return res;
 }
 
 int main()
 {
 	auto [r, p] = get_input();
-	std::cout << "A = " << r.A_ << ", B = " << r.B_ << ", C = " << r.C_ << "\n";
-	for(auto i : p)
-		std::cout << +i << ", ";
-	std::cout << "\n";
-	std::cout << "pt1  = " ; pt1(r, p) ; std::cout << "\n";
+
+	std::cout << "pt1 = " << pt1(r, p) << "\n";
 	std::cout << "pt2 = " << pt2(r, p) << "\n";
 }
 
