@@ -144,7 +144,7 @@ int64_t pt20(auto r, auto const& p)
 	return 0;
 }
 
-int64_t pt2(auto r, auto const& p)
+int64_t pt21(auto r, auto const& p)
 {
 //	int64_t sd{0xbdf4};
 	int64_t sd{0};
@@ -178,6 +178,43 @@ int64_t pt2(auto r, auto const& p)
 	}
 	return sd;
 }
+
+bool eval(int64_t f, int64_t np, auto& r, auto const& p, size_t st, int64_t& res)
+{
+	f &= (1LL << np) - 1;
+	for (int64_t n{ 0 }; n < 0x1ff; ++n)
+	{
+		r.A_ = f + (n << np);
+		r.execute(p);
+		if (r.out_.size() > p.size())
+			return false;
+		auto [a, b] = std::mismatch(r.out_.begin(), r.out_.end(), p.begin());
+		auto ml = std::distance(p.begin(), b);
+		if (ml == p.size())
+		{
+			res = f + (n << np);
+			return true;
+		}
+		if(std::distance(p.begin(), b) > st)
+		{
+//			std::cout << std::hex << f + (n << np) << " ";
+//			for (auto c : r.out_)
+//				std::cout << +c << ",";
+//			std::cout << std::dec << "\n";
+			if (eval(f + (n << np), np + 6, r, p, st + 2, res))
+				return true;
+		}
+	}
+	return false;
+}
+
+int64_t pt2(auto r, auto const& p)
+{
+	int64_t res{ 0 };
+	eval(res, 0, r, p, 0, res);
+	return res;
+}
+
 int main()
 {
 	auto [r, p] = get_input();
