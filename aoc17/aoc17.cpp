@@ -164,12 +164,10 @@ int64_t pt2(auto r, auto const& p)
 				for(auto c: r.out_)
 					std::cout << +c << ",";
 				sd = A;
-//				std::cout << "\n" << sd << std::dec << "\n";
-				std::cout << "\n" << sd << "\n";
-//				cnt = std::min( cnt + 1, r.out_.size() - 1);
+				std::cout << "\n" << std::oct << sd << std::dec << "\n";
 				++cnt;
 				shift += 3;
-//				sd &= (1LL << shift) - 1;
+				sd &= (1LL << shift) - 1;
 				break;
 			}
 		}
