@@ -61,7 +61,7 @@ struct regs
 				ip_ += 2;
 				break;
 			case 5:
-				out_.emplace_back(combo(o) % 8);
+				out_.emplace_back(char(combo(o) % 8));
 				ip_ += 2;
 				break;
 			case 6:
@@ -146,27 +146,36 @@ int64_t pt20(auto r, auto const& p)
 
 int64_t pt2(auto r, auto const& p)
 {
-	int64_t sd{0xbdf4};
-	int shift { 0 };
-	int cnt { 2 };
+//	int64_t sd{0xbdf4};
+	int64_t sd{0};
+	int64_t shift { 0 };
+	uint64_t cnt { 2 };
 	while(cnt != 16)
 	{
-		for (int64_t n{0}; n < 0xfffff; ++n)
+		auto tmp{ cnt };
+		for (int64_t n{0}; n < 0xffff; ++n)
 		{
 			int64_t A = sd + (n << shift);
 			r.A_ = A;
 			r.execute(p);
-			if(std::equal(r.out_.begin(), r.out_.begin() + cnt, p.begin(), p.begin() + cnt))
+			if(r.out_.size() >= cnt && std::equal(r.out_.begin(), r.out_.begin() + cnt, p.begin(), p.begin() + cnt))
 			{
 				std::cout << std::hex << A << " " << n << " " ;
 				for(auto c: r.out_)
 					std::cout << +c << ",";
-				std::cout << std::dec << "\n";
 				sd = A;
-				cnt = r.out_.size();
-				shift = 3 * (cnt - 1);
+//				std::cout << "\n" << sd << std::dec << "\n";
+				std::cout << "\n" << sd << "\n";
+//				cnt = std::min( cnt + 1, r.out_.size() - 1);
+				++cnt;
+				shift += 3;
+//				sd &= (1LL << shift) - 1;
 				break;
 			}
+		}
+		if (tmp == cnt)
+		{
+			break;
 		}
 	}
 	return sd;
@@ -179,7 +188,7 @@ int main()
 		std::cout << +i << ", ";
 	std::cout << "\n";
 	std::cout << "pt1  = " ; pt1(r, p) ; std::cout << "\n";
-	std::cout << "pt20 = " << pt2(r, p) << "\n";
+	std::cout << "pt2 = " << pt2(r, p) << "\n";
 }
 
 // pt2 0x21da40d4bdf4 == 37221274271220
