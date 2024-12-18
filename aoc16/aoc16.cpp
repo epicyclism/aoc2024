@@ -140,8 +140,17 @@ auto dijkstra(auto const& g, vertex_id_t from)
 	std::vector<int> distance(g.size(), -1);
 	auto pq_t_cmp = [&](auto& l, auto& r) { return distance[l.v_] < distance[r.v_]; };
 	std::priority_queue<pq_t, std::vector<pq_t>, decltype(pq_t_cmp)> q(pq_t_cmp);
-	q.push({ from, 2 });
+	int d{ 0 };
 	distance[from] = 0;
+	for (auto e : g[from])
+	{
+		if (valid_vertex_id(e))
+		{
+			q.push({ e, d });
+			distance[e] = 1;
+		}
+		++d;
+	}
 	while (!q.empty())
 	{
 		auto p = q.top(); q.pop();
@@ -150,8 +159,8 @@ auto dijkstra(auto const& g, vertex_id_t from)
 		{
 			if (valid_vertex_id(e) && (distance[e] == -1 || distance[e] > distance[p.v_] + cost_swivel(d, p.dir_)))
 			{
-				distance[e] = distance[p.v_] + cost_swivel(d, p.dir_);
-				q.push({ e, d });
+					distance[e] = distance[p.v_] + cost_swivel(d, p.dir_);
+					q.push({ e, d });
 			}
 			++d;
 		}
@@ -167,12 +176,12 @@ auto pt12(auto const& in, size_t str, size_t S, size_t E)
 
 	auto fwds{ dijkstra(g, S) };
 	auto bwds{ dijkstra(g, E) };
-	for (int n{ 0 }; n < fwds.size(); ++n)
-		std::cout << n << " " << fwds[n] << ", " << bwds[n] << " = " << fwds[n] + bwds[n] << "\n";
-	std::cout << bwds[S] << "\n";
+//	for (int n{ 0 }; n < fwds.size(); ++n)
+//		std::cout << n << " " << fwds[n] << ", " << bwds[n] << " = " << fwds[n] + bwds[n] << "\n";
+//	std::cout << bwds[S] << "\n";
 	std::transform(fwds.begin(), fwds.end(), bwds.begin(), bwds.begin(), std::plus<>());
 	auto p1 = fwds[E];
-	return std::make_pair(p1, std::count(bwds.begin(), bwds.end(), p1));
+	return std::make_pair(p1, std::count_if(bwds.begin(), bwds.end(), [=](auto v) { return v > 0 && v <= p1; }));
 }
 
 int main()

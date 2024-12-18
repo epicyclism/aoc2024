@@ -91,7 +91,7 @@ struct regs
 auto get_input()
 {
 	regs r;
-	std::vector<char> program;
+	std::vector<char> p;
 	std::string ln;
 
 	std::getline(std::cin, ln);
@@ -106,9 +106,9 @@ auto get_input()
 	std::getline(std::cin, ln);
 	std::getline(std::cin, ln);
 	for (auto m : ctre::search_all<"(\\d+)">(ln))
-		program.emplace_back(m.to_number<char>());
+		p.emplace_back(m.to_number<char>());
 
-	return std::make_pair(r, program);
+	return std::make_pair(r, p);
 }
 
 std::string pt1(auto r, auto const& p)
@@ -158,8 +158,8 @@ int main()
 {
 	auto [r, p] = get_input();
 
-	std::cout << "pt1 = " << pt1(r, p) << "\n";
-	std::cout << "pt2 = " << pt2(r, p) << "\n";
+	auto p1{ pt1(r, p) };
+	std::cout << "pt1 = " << p1 << "\n";
+	auto p2{ pt2(r, p) };
+	std::cout << "pt2 = " << p2 << "\n";
 }
-
-// pt2 0x21da40d4bdf4 == 37221274271220
