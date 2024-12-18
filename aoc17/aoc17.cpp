@@ -132,8 +132,7 @@ bool eval(int64_t k, auto& r, auto const& p, size_t cmp, int64_t& a)
 	{
 		r.A_ = n + k;
 		r.execute(p);
-		if(r.out_.size() >= p.size() - cmp && 
-			std::equal(p.begin() + cmp, p.end(), r.out_.begin()))
+		if(std::equal(p.begin() + cmp, p.end(), r.out_.begin(), r.out_.end()))
 		{
 			if(cmp == 0)
 			{
