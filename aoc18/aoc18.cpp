@@ -4,6 +4,7 @@
 
 #include "ctre_inc.h"
 #include "graph.h"
+#include "timer.h"
 
 auto get_input()
 {
@@ -27,6 +28,7 @@ std::pair<int, int> params(auto const& v)
 
 int pt1(auto const& in)
 {
+	timer t("pt1");
 	auto[cnt, exit] = params(in);
 	std::vector<char> g(71 * 71, '.');
 	auto p {in.begin()};
@@ -40,32 +42,35 @@ int pt1(auto const& in)
 	return r[exit];
 }
 
+// looking for the first byte that obstructs the path,
+// on the basis it is likely to be near the end of the input
+// add all the blocks then remove and test from the back
+// (just for speed)
 std::pair<int, int> pt2(auto const& in)
 {
+	timer t("pt2");
 	auto[cnt, exit] = params(in);
 	std::vector<char> g(71 * 71, '.');
-	auto p {in.begin()};
-	for(int n { 0}; n < cnt + 1; ++n)
-	{
-		g[(*p).first + (*p).second * 71] = '#';
-		++p;
-	}
+	for(auto& p: in)
+		g[p.first + p.second * 71] = '#';
 	grid gd(g, 71, [](auto f, auto t){ return t != '#';});
-	while(p != in.end())
+	auto pi{in.rbegin()};
+	while(pi != in.rend())
 	{
-		g[(*p).first + (*p).second * 71] = '#';
+		g[(*pi).first + (*pi).second * 71] = '.';
 		auto r = bfs(gd, 0);
-		if(r[exit] == -1)
+		if(r[exit] != -1)
 			break;
-		++p;
+		++pi;
 	}
-	return *p;
+	return *pi;
 }
 
 int main()
 {
 	auto in = get_input();
-	std::cout << "pt1 = " << pt1(in) << "\n";
+	auto p1{pt1(in)};
+	std::cout << "pt1 = " << p1 << "\n";
 	auto p2{pt2(in)};
 	std::cout << "pt2 = " << p2.first << "," << p2.second << "\n";
 }
