@@ -3,7 +3,6 @@
 #include <string>
 #include <algorithm>
 #include <numeric>
-#include <ranges>
 
 #include "trie.h"
 #include "ctre_inc.h"
@@ -28,43 +27,6 @@ auto get_input()
 	}
 
 	return std::make_pair(tt, designs);
-}
-
-bool can_make(auto const& tt, std::string_view design, int& cnt)
-{
-	++cnt;
-	if(design.empty())
-		return true;
-	if(cnt > 50)
-		return false;
-	auto dpth { tt.find_depth(design)};
-	if(dpth)
-	{
-		std::string_view dd{design.data(), dpth};
-		while(!dd.empty())
-		{
-			if(tt.find(dd))
-			{
-				std::string_view ddd{design};
-				ddd.remove_prefix(dd.size());
-				if(can_make(tt, ddd, cnt))
-					return true;
-			}
-			dd.remove_suffix(1);
-		}	
-	}
-	return false;
-}
-
-int64_t pt1(auto const& tt, auto const& designs)
-{
-	timer t("pt1");
-	return std::count_if(designs.begin(), designs.end(), [&](auto& design)
-	{
-		int c{0};
-		auto cm { can_make(tt, design, c)};
-		return cm;
-	});
 }
 
 int64_t how_many(auto const& tt, std::string_view design, auto& cache)
@@ -94,16 +56,15 @@ int64_t how_many(auto const& tt, std::string_view design, auto& cache)
 	return sm;
 }
 
-int64_t pt2(auto const& tt, auto const& designs)
+auto pt12(auto const& tt, auto const& designs)
 {
-	timer t("pt2");
+	timer t("pt12");
 	trie_t<int64_t> cache;
-	return std::reduce(designs.begin(), designs.end(), 0LL,[&](int64_t sm, auto& design)
-	{
-		int c{0};
-		auto cm { can_make(tt, design, c)};
-		if(cm)
-			sm += how_many(tt, design, cache);
+	return std::reduce(designs.begin(), designs.end(), std::make_pair(0LL, 0LL),[&](auto sm, auto& design)
+	{	
+		auto t = how_many(tt, design, cache);
+		sm.first += t != 0;
+		sm.second += t;
 		return sm;
 	});
 }
@@ -111,8 +72,8 @@ int64_t pt2(auto const& tt, auto const& designs)
 int main()
 {
 	auto [dict, designs] = get_input();
-	auto p1{ pt1(dict, designs) };
+
+	auto[p1, p2] = pt12(dict, designs);
 	std::cout << "pt1 = " << p1 << "\n";
-	auto p2{ pt2(dict, designs) };
 	std::cout << "pt2 = " << p2 << "\n";
 }
