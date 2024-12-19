@@ -23,9 +23,13 @@ namespace TRIE
         {}
         node_t(char k) : key_{k}, val_ {invalid_val}
         {}
-        bool valid() const
+        [[nodiscard]] bool valid() const
         {
             return val_ != invalid_val;
+        }
+        [[nodiscard]] bool empty() const
+        {
+            return children_.empty();
         }
     };
 
@@ -84,5 +88,9 @@ template<typename V> class trie_t
         std::size_t find_depth(std::string_view key) const
         {
             return TRIE::find_depth(&root_, key);
+        }
+        bool empty() const
+        {
+            return root_.empty();
         }
 };
