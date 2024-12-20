@@ -31,22 +31,37 @@ namespace TRIE
 
     template<typename V> std::optional<V> find(node_t<V> const* node, std::string_view key)
     {
-        for(auto c : key)
+        for(auto k : key)
         {
-            auto nn = std::find_if(node->children_.begin(), node->children_.end(), [c](auto const& nn){ return nn.key_ == c;});
+            auto nn = std::find_if(node->children_.begin(), node->children_.end(), [k](auto const& nn){ return nn.key_ == k;});
             if( nn == node->children_.end())
                 return std::nullopt;
             node = &*nn;
         }
         return node->valid() ? std::optional<V>{node->val_} : std::nullopt;
     }
-
+     template<typename V> std::size_t find_depth(node_t<V> const* node, std::string_view key)
+    {
+        std::size_t d{ 0 };
+        std::size_t c{ 0 };
+        for (auto k : key)
+        {
+            ++c;
+            auto nn = std::find_if(node->children_.begin(), node->children_.end(), [k](auto const& nn) { return nn.key_ == k; });
+            if (nn == node->children_.end())
+                break;
+            node = &*nn;
+            if (node->valid())
+                d = c;
+        }
+        return d;
+    }
     template<typename V> void insert(node_t<V>* node, std::string_view key, V val)
     {
-        for(auto c : key)
+        for(auto k : key)
         {
-            auto nn = std::find_if(node->children_.begin(), node->children_.end(), [c](auto const& nn){ return nn.key_ == c;});
-            node = (nn == node->children_.end()) ? &node->children_.emplace_back(c) : &*nn;
+            auto nn = std::find_if(node->children_.begin(), node->children_.end(), [k](auto const& nn){ return nn.key_ == k;});
+            node = (nn == node->children_.end()) ? &node->children_.emplace_back(k) : &*nn;
         }
         node->val_ = val;
     }
@@ -63,8 +78,16 @@ template<typename V> class trie_t
         {
             TRIE::insert(&root_, key, val);
         }
-        std::optional<V> find(std::string_view key)
+        [[nodiscard]] std::optional<V> find(std::string_view key) const
         {
             return TRIE::find(&root_, key);
+        }
+        [[nodiscard]] std::size_t find_depth(std::string_view key) const
+        {
+            return TRIE::find_depth(&root_, key);
+        }
+        [[nodiscard]] bool empty() const
+        {
+            return root_.children_.empty();
         }
 };
