@@ -1,58 +1,104 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <numeric>
-#include <ranges>
+#include <array>
 
-#include "ctre_inc.h"
+#include "graph.h"
 #include "timer.h"
 
 auto get_input()
 {
-	timer t("input");
-	std::vector<int64_t> vl;
-	std::vector<int64_t> vr;
+	std::vector<char> v;
 	std::string ln;
+	size_t str{0};
+	size_t S{0};
+	size_t E{0};
+	size_t P{0};
 	while(std::getline(std::cin, ln))
 	{
-		if(auto[m, a, b] = ctre::match<"(\\d+)\\s+(\\d+)">(ln); m)
-		{
-			vl.emplace_back(a.to_number<int64_t>());
-			vr.emplace_back(b.to_number<int64_t>());
-		}
+		if(str == 0)
+			str = ln.size();
+		if(auto p = ln.find('S'); p != std::string::npos)
+			S = P + p;
+		if(auto p = ln.find('E'); p != std::string::npos)
+			E = P + p;
+		P += ln.size();
+		v.insert(v.end(), ln.begin(), ln.end());
 	}
-	std::ranges::sort(vl);
-	std::ranges::sort(vr);
 
-	return std::make_pair(vl, vr);
+	return std::make_tuple(v, str, S, E);
 }
 
-int64_t pt1(auto const& l, auto const& r)
+
+int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
 {
 	timer t("pt1");
-	return std::transform_reduce(l.begin(), l.end(), r.begin(), 0LL, std::plus<>(), [](auto l, auto r)
+	grid gd(in, str, [](auto f, auto t){ return t != '#';});
+	auto r = bfs<decltype(gd), true>(gd, S);
+
+	auto base_distance{r.first[E]};
+	int cnt{0};
+	auto p = E;
+	while( p != S)
+	{
+		auto cheat_start { r.first[p]};
+		for(auto e : gd.two_step(p))
 		{
-			return std::abs(l - r);
-		});
+			if(valid_vertex_id(r.first[e]))
+			{
+				auto saved = cheat_start - r.first[e] - 2;
+				if(saved > 99)
+					++cnt;
+			}
+		}
+		p = r.second[p];
+	}
+	return cnt;
 }
 
-int64_t pt2(auto const& vl, auto const& vr)
+int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
 {
 	timer t("pt2");
-	int64_t v { 0};
-	for(auto l: vl)
+	grid gd(in, str, [](auto f, auto t){ return t != '#';});
+	auto r = bfs<decltype(gd), true>(gd, S);
+
+	auto base_distance{r.first[E]};
+	int cnt{0};
+	std::array<int, 50> rs;
+	rs.fill(0);
+	auto p = E;
+	while( p != S)
 	{
-		v += l * std::count(vr.begin(), vr.end(), l);
+		auto cheat_start { r.first[p]};
+		for(auto [e, d] : gd.template n_step<20>(p))
+		{
+			if(valid_vertex_id(r.first[e]))
+			{
+				auto saved = cheat_start - r.first[e] - d;
+				if(saved > 49)
+				{
+					++cnt;
+					++rs[saved-50];
+				}
+			}
+		}
+		p = r.second[p];
 	}
-	return v;
+	for(int n{0}; n < 50; ++n)
+		if(rs[n])
+			std::cout << rs[n] << " - " << n + 50 << "\n";
+	return cnt;
 }
 
 int main()
 {
-	auto [l, r] = get_input();
-	auto p1{pt1(l, r)};
+	auto [v, s, S, E] = get_input();
+
+	auto p1{ pt1(v, s, S, E) };
 	std::cout << "pt1 = " << p1 << "\n";
-	auto p2{pt2(l, r)};
+	auto p2{ pt2(v, s, S, E) };
 	std::cout << "pt2 = " << p2 << "\n";
 }
+
+// p1 1269 too high
+// p2 952515 too low

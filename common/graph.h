@@ -228,6 +228,53 @@ public:
             rv.emplace_back(v + stride_);
         return rv;
     }
+    std::vector<vertex_id_t> two_step(vertex_id_t v) const
+    {
+        std::vector<vertex_id_t> rv;
+        // left
+        if (v % stride_ > 1 && !vp_(data_[v], data_[v - 1]) && vp_(data_[v], data_[v - 2]))
+            rv.emplace_back(v - 2);
+        // right
+        if (v % stride_ < stride_ - 1 && !vp_(data_[v], data_[v + 1]) && vp_(data_[v], data_[v + 2]))
+            rv.emplace_back(v + 2);
+        // up
+        if (v > 2 * stride_ && !vp_(data_[v], data_[v - stride_]) && vp_(data_[v], data_[v - 2 * stride_]))
+            rv.emplace_back(v - 2 *stride_);
+        // down
+        if (v < data_.size() - 2 * stride_ && !vp_(data_[v], data_[v + stride_]) && vp_(data_[v], data_[v + 2 * stride_]))
+            rv.emplace_back(v + 2 * stride_);
+        return rv;
+    }
+    template<int N> auto make_viable(vertex_id_t v) const
+    {
+        std::vector<std::pair<vertex_id_t, int>> viable;
+        int x { int(v % stride_)};
+        int y { int(v / stride_)};
+        for(int dx = -N; dx <= N; ++dx)
+        {
+            for(int dy = -N; dy <= N; ++dy)
+            {
+                int d{std::abs(dx) + std::abs(dy)};
+                if(d <= N)
+                {
+                    if(x + dx > 0 && x + dx < stride_ &&
+                        y + dy > 0 && y + dy < stride_)
+                        viable.emplace_back(x + dx + (y + dy) * stride_, d );
+                }
+            }
+        }
+        return viable;
+    }
+    template<int N> auto n_step(vertex_id_t v) const
+    {
+        std::vector<std::pair<vertex_id_t, int>> rv;
+        auto viable{make_viable<N>(v)};
+        for(auto [vt, d]: viable)
+            if(vp_(data_[v], data_[vt]))
+                rv.emplace_back(vt, d);
+        return rv;
+    }
+
     size_t size() const
     {
         return data_.size();

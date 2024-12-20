@@ -23,13 +23,9 @@ namespace TRIE
         {}
         node_t(char k) : key_{k}, val_ {invalid_val}
         {}
-        [[nodiscard]] bool valid() const
+        bool valid() const
         {
             return val_ != invalid_val;
-        }
-        [[nodiscard]] bool empty() const
-        {
-            return children_.empty();
         }
     };
 
@@ -43,20 +39,6 @@ namespace TRIE
             node = &*nn;
         }
         return node->valid() ? std::optional<V>{node->val_} : std::nullopt;
-    }
-
-    template<typename V> std::size_t find_depth(node_t<V> const* node, std::string_view key)
-    {
-        size_t depth{0};
-        for(auto c : key)
-        {
-            auto nn = std::find_if(node->children_.begin(), node->children_.end(), [c](auto const& nn){ return nn.key_ == c;});
-            if( nn == node->children_.end())
-                return depth;
-            ++depth;
-            node = &*nn;
-        }
-        return depth;
     }
 
     template<typename V> void insert(node_t<V>* node, std::string_view key, V val)
@@ -81,16 +63,8 @@ template<typename V> class trie_t
         {
             TRIE::insert(&root_, key, val);
         }
-        std::optional<V> find(std::string_view key) const
+        std::optional<V> find(std::string_view key)
         {
             return TRIE::find(&root_, key);
-        }
-        std::size_t find_depth(std::string_view key) const
-        {
-            return TRIE::find_depth(&root_, key);
-        }
-        bool empty() const
-        {
-            return root_.empty();
         }
 };
