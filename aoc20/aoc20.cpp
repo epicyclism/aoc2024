@@ -29,7 +29,6 @@ auto get_input()
 	return std::make_tuple(v, str, S, E);
 }
 
-
 int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
 {
 	timer t("pt1");
@@ -38,21 +37,37 @@ int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
 
 	auto base_distance{r.first[E]};
 	int cnt{0};
+	std::array<int, 100> rs;
+	rs.fill(0);
 	auto p = E;
 	while( p != S)
 	{
 		auto cheat_start { r.first[p]};
 		for(auto e : gd.two_step(p))
 		{
-			if(valid_vertex_id(r.first[e]))
+			if(valid_vertex_id(r.first[e]) && r.first[e] > r.first[p])
 			{
-				auto saved = cheat_start - r.first[e] - 2;
+				auto saved = r.first[e] - cheat_start - 2;
 				if(saved > 99)
 					++cnt;
+#if 0
+				if (saved == 4)
+				{
+					++rs[saved];
+					auto [xf, yf] = gd.to_xy(p);
+					auto [xt, yt] = gd.to_xy(e);
+					std::cout << "{ " << xf << ", " << yf << " } -> { " << xt << ", " << yt << " } = " << saved << "\n";
+				}
+#endif
 			}
 		}
 		p = r.second[p];
 	}
+#if 0
+	for (int n{ 0 }; n < 100; ++n)
+		if (rs[n])
+			std::cout << rs[n] << " - " << n << "\n";
+	#endif
 	return cnt;
 }
 
@@ -62,7 +77,6 @@ int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
 	grid gd(in, str, [](auto f, auto t){ return t != '#';});
 	auto r = bfs<decltype(gd), true>(gd, S);
 
-	auto base_distance{r.first[E]};
 	int cnt{0};
 	std::array<int, 50> rs;
 	rs.fill(0);
@@ -72,9 +86,9 @@ int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
 		auto cheat_start { r.first[p]};
 		for(auto [e, d] : gd.template n_step<20>(p))
 		{
-			if(valid_vertex_id(r.first[e]))
+			if(valid_vertex_id(r.first[e]) && r.first[e] > r.first[p])
 			{
-				auto saved = cheat_start - r.first[e] - d;
+				auto saved = r.first[e] - cheat_start - d;
 				if(saved > 49)
 				{
 					++cnt;
@@ -84,9 +98,11 @@ int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
 		}
 		p = r.second[p];
 	}
+#if 1
 	for(int n{0}; n < 50; ++n)
 		if(rs[n])
 			std::cout << rs[n] << " - " << n + 50 << "\n";
+#endif
 	return cnt;
 }
 
@@ -99,6 +115,3 @@ int main()
 	auto p2{ pt2(v, s, S, E) };
 	std::cout << "pt2 = " << p2 << "\n";
 }
-
-// p1 1269 too high
-// p2 952515 too low
