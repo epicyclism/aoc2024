@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <array>
 
 #include "graph.h"
 #include "timer.h"
@@ -35,12 +34,9 @@ int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
 	grid gd(in, str, [](auto f, auto t){ return t != '#';});
 	auto r = bfs<decltype(gd), true>(gd, S);
 
-	auto base_distance{r.first[E]};
 	int cnt{0};
-	std::array<int, 100> rs;
-	rs.fill(0);
 	auto p = E;
-	while( p != S)
+	while(1)
 	{
 		auto cheat_start { r.first[p]};
 		for(auto e : gd.two_step(p))
@@ -50,24 +46,13 @@ int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
 				auto saved = r.first[e] - cheat_start - 2;
 				if(saved > 99)
 					++cnt;
-#if 0
-				if (saved == 4)
-				{
-					++rs[saved];
-					auto [xf, yf] = gd.to_xy(p);
-					auto [xt, yt] = gd.to_xy(e);
-					std::cout << "{ " << xf << ", " << yf << " } -> { " << xt << ", " << yt << " } = " << saved << "\n";
-				}
-#endif
+
 			}
 		}
+		if (p == S)
+			break;
 		p = r.second[p];
 	}
-#if 0
-	for (int n{ 0 }; n < 100; ++n)
-		if (rs[n])
-			std::cout << rs[n] << " - " << n << "\n";
-	#endif
 	return cnt;
 }
 
@@ -78,10 +63,8 @@ int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
 	auto r = bfs<decltype(gd), true>(gd, S);
 
 	int cnt{0};
-	std::array<int, 50> rs;
-	rs.fill(0);
 	auto p = E;
-	while( p != S)
+	while(1)
 	{
 		auto cheat_start { r.first[p]};
 		for(auto [e, d] : gd.template n_step<20>(p))
@@ -89,20 +72,14 @@ int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
 			if(valid_vertex_id(r.first[e]) && r.first[e] > r.first[p])
 			{
 				auto saved = r.first[e] - cheat_start - d;
-				if(saved > 49)
-				{
+				if(saved > 99)
 					++cnt;
-					++rs[saved-50];
-				}
 			}
 		}
+		if (p == S)
+			break;
 		p = r.second[p];
 	}
-#if 1
-	for(int n{0}; n < 50; ++n)
-		if(rs[n])
-			std::cout << rs[n] << " - " << n + 50 << "\n";
-#endif
 	return cnt;
 }
 

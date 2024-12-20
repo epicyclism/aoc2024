@@ -76,6 +76,7 @@ auto bfs(G const& g, vertex_id_t id_from)
     std::queue<vertex_id_t> q;
     q.push(id_from);
     recorder.set_distance(id_from, id_from);
+    visited[id_from] = true;
     while (!q.empty())
     {
         auto u = q.front(); q.pop();
