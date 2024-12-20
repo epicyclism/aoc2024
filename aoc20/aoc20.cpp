@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <array>
 
 #include "graph.h"
 #include "timer.h"
@@ -28,67 +29,52 @@ auto get_input()
 	return std::make_tuple(v, str, S, E);
 }
 
-int64_t pt1(auto const& in, size_t str, size_t S, size_t E)
+struct p
 {
-	timer t("pt1");
-	grid gd(in, str, [](auto f, auto t){ return t != '#';});
-	auto r = bfs<decltype(gd), true>(gd, S);
+	int d_;
+	int x_;
+	int y_;
+};
 
-	int cnt{0};
-	auto p = E;
-	while(1)
-	{
-		auto cheat_start { r.first[p]};
-		for(auto e : gd.two_step(p))
-		{
-			if(valid_vertex_id(r.first[e]) && r.first[e] > r.first[p])
-			{
-				auto saved = r.first[e] - cheat_start - 2;
-				if(saved > 99)
-					++cnt;
-
-			}
-		}
-		if (p == S)
-			break;
-		p = r.second[p];
-	}
-	return cnt;
+inline int manhattan( p& f, p& t)
+{
+	return std::abs(f.x_ - t.x_) + std::abs(f.y_ - t.y_);
 }
 
-int64_t pt2(auto const& in, size_t str, size_t S, size_t E)
+std::pair<int, int> pt12(auto const& in, size_t str, size_t S, size_t E)
 {
-	timer t("pt2");
+	timer t("pt12");
 	grid gd(in, str, [](auto f, auto t){ return t != '#';});
 	auto r = bfs<decltype(gd), true>(gd, S);
-
-	int cnt{0};
-	auto p = E;
+	std::vector<p> vp;
+	auto pt{E};
 	while(1)
 	{
-		auto cheat_start { r.first[p]};
-		for(auto [e, d] : gd.template n_step<20>(p))
-		{
-			if(valid_vertex_id(r.first[e]) && r.first[e] > r.first[p])
-			{
-				auto saved = r.first[e] - cheat_start - d;
-				if(saved > 99)
-					++cnt;
-			}
-		}
-		if (p == S)
+		auto[x, y] = gd.to_xy(pt);
+		vp.emplace_back(r.first[pt], x, y);
+		if(pt == S)
 			break;
-		p = r.second[p];
+		pt = r.second[pt];
 	}
-	return cnt;
+	int p1{0};
+	int p2{0};
+	for(auto is{vp.rbegin()}; is != vp.rend(); ++is)
+		for(auto it{is + 1}; it != vp.rend(); ++it)
+		{
+			auto d { manhattan(*is, *it)};
+			if(d == 2 && (*it).d_ - (*is).d_ - 2 > 99)
+				++p1;
+			if(d < 21 && (*it).d_ - (*is).d_ - d > 99)
+				++p2;
+		}
+	return {p1, p2};
 }
 
 int main()
 {
 	auto [v, s, S, E] = get_input();
 
-	auto p1{ pt1(v, s, S, E) };
+	auto[p1, p2] = pt12(v, s, S, E);
 	std::cout << "pt1 = " << p1 << "\n";
-	auto p2{ pt2(v, s, S, E) };
-	std::cout << "pt2 = " << p2 << "\n";
+	std::cout << "pt2 = " << p2 << "\n"; 
 }
