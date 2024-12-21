@@ -37,7 +37,7 @@ FetchContent_Declare( ctre
     )
 FetchContent_MakeAvailable(ctre)
 # uncomment when/if necessary!
-find_package(Boost 1.83 REQUIRED)
+#find_package(Boost 1.83 REQUIRED)
 find_package(z3 QUIET)
 if(z3_FOUND)
     add_compile_definitions(USE_Z3)

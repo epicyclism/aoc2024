@@ -180,7 +180,7 @@ std::vector<char> command_directionpad(auto const& s)
 		auto r = bfs(directionpad, start);
 		auto rt{route(r, start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
-		rv.push_back(4);
+		rv.push_back(0xa);
 		start = c;
 	}
 	return rv;
@@ -192,9 +192,9 @@ int64_t pt1(auto const& vv)
 	for(auto& v: vv)
 	{
 		auto v1{command_keypad(v)};
-//		print(v1);
+		print(v1);
 		auto v2{command_directionpad(v1)};
-//		print(v2);
+		print(v2);
 		auto v3{command_directionpad(v2)};
 //		print(v3);
 		auto v4{command_directionpad(v3)};
