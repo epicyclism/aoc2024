@@ -99,32 +99,38 @@ inline int cost_swivel(int df, int dt)
 	return std::abs(dt - df) == 2 ? 1000000 : 20;
 }
 
-void dfs_w(auto const& g, char from, auto& arrived_from, auto& wt)
+auto dijkstra(auto const& g, char from)
 {
-	char d{ 0 };
-	for (auto e : g[from])
+	struct pq_t
 	{
-		if (valid_vertex_id(e))
+		char v_;
+		char dir_;
+	};
+	std::vector<std::pair<char, char>> 		arrived_from(g.size());
+	std::vector<int> distance(g.size(), -1);
+	auto pq_t_cmp = [&](auto& l, auto& r) { return distance[l.v_] < distance[r.v_]; };
+	std::priority_queue<pq_t, std::vector<pq_t>, decltype(pq_t_cmp)> q(pq_t_cmp);
+	q.push({ from, 8 });
+	arrived_from[from] = { from, 8 };
+	distance[from] = 0;
+	while (!q.empty())
+	{
+		auto p = q.top(); q.pop();
+		char d{ 0 };
+		for (auto e : g[p.v_])
 		{
-			if(wt[e] > wt[from] + cost_swivel(d, arrived_from[from].second))
+			if (valid_vertex_id(e) && (distance[e] == -1 || distance[e] > distance[p.v_] + cost_swivel(d, p.dir_)))
 			{
-				wt[e] = wt[from] + cost_swivel(d, arrived_from[from].second);
-				arrived_from[e] = {from, d};
-				dfs_w(g, e, arrived_from, wt);
+				distance[e] = distance[p.v_] + cost_swivel(d, p.dir_);
+				arrived_from[e] = {p.v_, d};
+				q.push({ e, d });
 			}
+			++d;
 		}
-		++d;
 	}
-}
 
-auto dfs(auto const& g, char from)
-{
-	std::vector<std::pair<char, char>> arrived_from(g.size());
-	std::vector<int> wt(g.size(), -1);
-	dfs_w(g, from, arrived_from, wt);
 	return arrived_from;
 }
-
 std::vector<char> route(auto const& prev, char start, char end)
 {
 	std::vector<char> route;
@@ -164,7 +170,7 @@ std::vector<char> command_keypad(auto const& s)
 	char start {0xa};
 	for(auto c: s)
 	{
-		auto r = dfs(keypad, start);
+		auto r = dijkstra(keypad, start);
 		auto rt{route(r, start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
 		rv.push_back(0xa);
@@ -197,7 +203,7 @@ std::vector<char> command_directionpad(auto const& s)
 	char start {0xa};
 	for(auto c: s)
 	{
-		auto r = dfs(directionpad, start);
+		auto r = dijkstra(directionpad, start);
 		auto rt{route(r, start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
 		rv.push_back(0xa);
