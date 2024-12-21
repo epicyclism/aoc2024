@@ -192,34 +192,38 @@ void decode_directionpad(auto const& v)
 	char now{0xa};
 	for(auto c: v)
 	{
-		auto f{now};
 		switch(c)
 		{
 			case 0:
 			if(now == 3)
 				now = 0;
+			else
 			if(now == 2)
 				now = 3;
+			else
 			if(now == 0xa)
 				now = 1;
 			break;
 			case 1:
 			if(now == 3)
 				now = 1;
+			else
 			if(now == 2)
 				now = 0xa;
 			break;
 			case 2:
 				if(now == 0)
 					now = 3;
+				else
 				if(now == 3)
 					now = 2;
-				if(now == 1)
+				else if(now == 1)
 					now = 0xa;
 			break;
 			case 3:
 				if(now == 1)
 					now = 3;
+				else
 				if(now == 0xa)
 					now = 2;
 			break;
@@ -229,8 +233,6 @@ void decode_directionpad(auto const& v)
 			default:
 			break;
 		}
-		if( now == f && f != 0x0a)
-			std::cout << "bogus\n";
 	}
 	std::cout << "\n";
 }
@@ -276,13 +278,38 @@ int64_t pt2(auto const& vv)
 	return 0;
 }
 
+std::vector<char> translate(auto const& v)
+{
+	std::vector<char> vr;
+	for(auto c: v)
+		if(c == '<')
+			vr.push_back(0);
+		else if( c == '^')
+			vr.push_back(1);
+		else if(c == '>')
+			vr.push_back(2);
+		else if( c == 'v')
+			vr.push_back(3);
+		else if(c == 'A')
+			vr.push_back(0xa);
+		else
+			std::cout << "bad char " << c << "\n";
+	return vr;
+}
+
 int main()
 {
 	auto vv = get_input();
-	auto p1{pt1(vv)};
-	std::cout << "pt1 = " << p1 << "\n";
-	auto p2{pt2(vv)};
-	std::cout << "pt2 = " << p2 << "\n";
+
+	std::string s = "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A";
+	auto v = translate(s);
+	decode_directionpad(v);
+
+//	auto p1{pt1(vv)};
+//	std::cout << "pt1 = " << p1 << "\n";
+//	auto p2{pt2(vv)};
+//	std::cout << "pt2 = " << p2 << "\n";
 }
 
 // <v<A>A<A>^>AvA<^A>vA^A<v<A>^>AvA^A<v<A>^>AAvA<A^>A<A>A<v<A>A^>AAA<A>vA^A
+// <vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A
