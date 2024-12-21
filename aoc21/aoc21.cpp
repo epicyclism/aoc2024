@@ -54,6 +54,7 @@ char to_char_dir(char d)
 }
 void print(auto const& v)
 {
+	std::cout << v.size() << " : ";
 	for(auto d: v)
 	{
 		std::cout << to_char_dir(d);
@@ -153,22 +154,22 @@ std::vector<char> command_keypad(auto const& s)
 	return rv;
 }
 
-//  ^A    3 a
-// <v>  0 1 2
+//  ^A    1 a
+// <v>  0 3 2
 //
 std::vector<std::array<char, 4>> directionpad
 {
-	{-1, -1, 1, -1},  // 0
-	{0, 3, 2, -1},    // 1
-	{1, 0xa, -1, -1}, // 2
-	{-1, -1, 0xa, 1}, // 3
+	{-1, -1, 3, -1},  // 0
+	{-1, -1, 0xa, 3}, // 1
+	{3, 0xa, -1, -1}, // 2
+	{0, 1, 2, -1}, // 3
 	{-1, -1, -1, -1}, // 4
 	{-1, -1, -1, -1}, // 5	
 	{-1, -1, -1, -1}, // 6
 	{-1, -1, -1, -1}, // 7
 	{-1, -1, -1, -1}, // 8
 	{-1, -1, -1, -1}, // 9
-	{3, -1, -1, 2},   // a
+	{1, -1, -1, 2},   // a
 };
 
 std::vector<char> command_directionpad(auto const& s)
@@ -186,15 +187,63 @@ std::vector<char> command_directionpad(auto const& s)
 	return rv;
 }
 
+void decode_directionpad(auto const& v)
+{
+	char now{0xa};
+	for(auto c: v)
+	{
+		auto f{now};
+		switch(c)
+		{
+			case 0:
+			if(now == 3)
+				now = 0;
+			if(now == 2)
+				now = 3;
+			if(now == 0xa)
+				now = 1;
+			break;
+			case 1:
+			if(now == 3)
+				now = 1;
+			if(now == 2)
+				now = 0xa;
+			break;
+			case 2:
+				if(now == 0)
+					now = 3;
+				if(now == 3)
+					now = 2;
+				if(now == 1)
+					now = 0xa;
+			break;
+			case 3:
+				if(now == 1)
+					now = 3;
+				if(now == 0xa)
+					now = 2;
+			break;
+			case 0xa:
+				std::cout << to_char_dir(now) << "A";
+			break;
+			default:
+			break;
+		}
+		if( now == f && f != 0x0a)
+			std::cout << "bogus\n";
+	}
+	std::cout << "\n";
+}
+
 int64_t to_i(auto& v)
 {
 	int64_t t{0};
 	for(auto c: v)
 	{
-		if(!::isdigit(c))
+		if(c>9)
 			break;
 		t *= 10;
-		t += c - '0';
+		t += c;
 	}
 	return t;
 }
@@ -206,14 +255,16 @@ int64_t pt1(auto const& vv)
 	for(auto& v: vv)
 	{
 		auto v1{command_keypad(v)};
-//		print(v1);
+		print(v1);
 		auto v2{command_directionpad(v1)};
-//		print(v2);
+		print(v2);
+		decode_directionpad(v2);
 		auto v3{command_directionpad(v2)};
 		print(v3);
+		decode_directionpad(v3);
 //		auto v4{command_directionpad(v3)};
 //		print(v4);
-		std::cout << v3.size() << " " << to_i(v) << "\n";
+		std::cout << v3.size() << "\n";
 		r += v3.size() * to_i(v);
 	}
 	return r;
@@ -228,6 +279,10 @@ int64_t pt2(auto const& vv)
 int main()
 {
 	auto vv = get_input();
-	std::cout << "pt1 = " << pt1(vv) << "\n";
-	std::cout << "pt2 = " << pt2(vv) << "\n";
+	auto p1{pt1(vv)};
+	std::cout << "pt1 = " << p1 << "\n";
+	auto p2{pt2(vv)};
+	std::cout << "pt2 = " << p2 << "\n";
 }
+
+// <v<A>A<A>^>AvA<^A>vA^A<v<A>^>AvA^A<v<A>^>AAvA<A^>A<A>A<v<A>A^>AAA<A>vA^A
