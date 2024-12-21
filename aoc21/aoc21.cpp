@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <numeric>
+#include <span>
 
 #include "graph.h"
 #include "timer.h"
@@ -52,6 +53,7 @@ char to_char_dir(char d)
 	}
 	return c;
 }
+
 void print(auto const& v)
 {
 	std::cout << v.size() << " : ";
@@ -60,34 +62,6 @@ void print(auto const& v)
 		std::cout << to_char_dir(d);
 	}
 	std::cout << "\n";
-}
-
-auto bfs(auto const& g, char id_from) 
-{
-	std::vector<std::pair<char, char>> 		arrived_from(g.size());
-    std::vector<bool>       visited(g.size());
-    std::queue<char> q;
-    q.push(id_from);
-	arrived_from[id_from] = {id_from, 0};
-    visited[id_from] = true;
-    while (!q.empty())
-    {
-        auto u = q.front(); q.pop();
-		auto& eg{g[u]};
-		char d{arrived_from[u].second};
-		for(int n = 0; n < 4; ++n)
-		{
-        	if (valid_vertex_id(eg[d]) && !visited[eg[d]])
-        	{
-                visited[eg[d]] = true;
-				arrived_from[eg[d]] = {u, d};
-               q.push(eg[d]);
-            }
-			++d;
-			d &= 3;
-		}
-    }
-    return arrived_from;
 }
 
 std::vector<char> route(auto const& prev, char start, char end)
@@ -108,20 +82,7 @@ std::vector<char> route(auto const& prev, char start, char end)
 // 123
 //  0A
 //
-std::vector<std::array<char, 4>> keypad
-{
-	{-1, 2, 0xa, -1}, // 0
-	{-1, 4, 2, 0}, // 1
-	{1, 5, 3, 0}, // 2
-	{2, 6, -1, 0xa}, // 3
-	{-1, 7, 5, 1}, // 4
-	{4, 8, 6, 2}, // 5
-	{5, 9, -1, 3}, // 6
-	{-1, -1, 8, 4}, // 7
-	{7, -1, 9, 5}, // 8
-	{8, -1, -1, 6}, // 9
-	{0, 3, -1, -1}  // A
-};
+
 std::vector<std::pair<int, std::vector<char>>> kp_crib
 {
 	{
@@ -138,6 +99,17 @@ std::vector<std::pair<int, std::vector<char>>> kp_crib
 	}
 };
 
+std::vector<std::pair<int, std::vector<char>>> kp_crib1
+{
+	{
+		{382, {1, 0xa, 0, 1, 1, 0xa, 3, 3, 0xa, 3, 2, 0xa}},
+		{176, {1, 0, 0, 0xa, 1, 1, 0xa, 3, 2, 2, 0xa, 3, 3, 0xa}},
+		{463, {1, 1, 0, 0, 0xa, 2, 2, 0xa, 3, 0xa, 3, 0xa}},
+		{ 83, {0, 0xa, 1, 1, 1, 0xa, 3, 3, 2, 0xa, 3, 0xa}},
+		{789, {1, 1, 1, 0, 0, 0xa, 2, 0xa, 2, 0xa, 3, 3, 3, 0xa}}
+	}
+};
+
 std::vector<char> command_keypad(auto const& s, int k)
 {
 	std::vector<char> rv;
@@ -145,18 +117,8 @@ std::vector<char> command_keypad(auto const& s, int k)
 	{
 		if( kpc.first == k)
 		{
-			std::cout << "kpc hit " << k << "\n";
 			return kpc.second;
 		}
-	}
-	char start {0xa};
-	for(auto c: s)
-	{
-		auto r = bfs(keypad, start);
-		auto rt{route(r, start, c)};
-		rv.insert(rv.end(), rt.begin(), rt.end());
-		rv.push_back(0xa);
-		start = c;
 	}
 	return rv;
 }
@@ -208,56 +170,6 @@ std::vector<char> command_directionpad(auto const& s)
 	return rv;
 }
 
-void decode_directionpad(auto const& v)
-{
-	char now{0xa};
-	for(auto c: v)
-	{
-		switch(c)
-		{
-			case 0:
-			if(now == 3)
-				now = 0;
-			else
-			if(now == 2)
-				now = 3;
-			else
-			if(now == 0xa)
-				now = 1;
-			break;
-			case 1:
-			if(now == 3)
-				now = 1;
-			else
-			if(now == 2)
-				now = 0xa;
-			break;
-			case 2:
-				if(now == 0)
-					now = 3;
-				else
-				if(now == 3)
-					now = 2;
-				else if(now == 1)
-					now = 0xa;
-			break;
-			case 3:
-				if(now == 1)
-					now = 3;
-				else
-				if(now == 0xa)
-					now = 2;
-			break;
-			case 0xa:
-				std::cout << to_char_dir(now);
-			break;
-			default:
-			break;
-		}
-	}
-	std::cout << "\n";
-}
-
 int64_t to_i(auto& v)
 {
 	int64_t t{0};
@@ -294,37 +206,28 @@ int64_t pt2(auto const& vv)
 	{
 		int id = to_i(v);
 		auto v1{command_keypad(v, id)};
-		auto v2 = v1;
-		auto sz{v2.size()};
-		for(int n = 0; n < 25; ++n)
+		int64_t sz{0};
+		auto it{v1.begin()};
+		auto it2{it};
+		while(it2 != v1.end())
 		{
-			v2 = command_directionpad(v2);
-			std::cout << n << " " << v2.size() << " (" << v2.size () - sz <<"\n";
-			sz = v2.size();
-		}
-		r += v2.size() * id;
+			while(*it2 != 0xa)
+				++it2;
+			++it2;
+			auto sp = std::span(it, it2);
+			auto v2 = command_directionpad(sp);
+			for(int n = 1; n < 25; ++n)
+				v2 = command_directionpad(v2);
+			sz += v2.size();
+			it = it2;
+			std::cout << "   " << sz << "\n"
+;		}
+		std::cout << sz << "\n";
+		r += sz * id;
 	}
 	return r;
 }
 
-std::vector<char> translate(auto const& a)
-{
-	std::vector<char> rv;
-	for(auto c: a)
-	{
-		if( c == '<')
-			rv.push_back(0);
-		if( c == '^')
-			rv.push_back(1);
-		if( c == '>')
-			rv.push_back(2);
-		if(c == 'v')
-			rv.push_back(3);
-		if( c == 'A')
-			rv.push_back(0xa);
-	}
-	return rv;
-}
 int main()
 {
 	auto vv = get_input();
@@ -334,22 +237,17 @@ int main()
 
 	auto p2{pt2(vv)};
 	std::cout << "pt2 = " << p2 << "\n";
-
-	std::string s = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A";
-	auto v = translate(s);
-	std::cout << s << "\n";
-	decode_directionpad(v);
 }
 
-// <v<A>^>A<A>A<AA>vA^A<vAAA^>A
-// <v<A>A<A>^>AvA<^A>vA^A<v<A>^>AvA^A<v<A>^>AAvA<A^>A<A>A<v<A>A^>AAA<A>vA^A
-//
-// v<<A>>^A<A>AvA<^AA>A<vAAA>^A
-// <v<A>>^AvA^A<vA<   AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A >^AAAvA<^A>A
-// v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA<^A>Av<A>^AA<A>Av<A<A>>^AAAvA<^A>A
 //
 // 133054 too high
 // 132350 too high
 // 132018 too high
 // 130490 ??
 // 128962 ??
+
+// 336005649663463 too high
+// 336471742129638
+// 131006741852991 too low
+// 863544533437568
+// 336224844349270 too high
