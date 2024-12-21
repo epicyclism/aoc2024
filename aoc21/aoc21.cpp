@@ -90,41 +90,6 @@ auto bfs(auto const& g, char id_from)
     return arrived_from;
 }
 
-inline int cost_swivel(int df, int dt)
-{
-	if (df == dt)
-		return 1;
-	if(df == 8 || dt == 8)
-		return 1;
-	return std::abs(dt - df) == 2 ? 1000000 : 20;
-}
-
-void dfs_w(auto const& g, char from, auto& arrived_from, auto& wt)
-{
-	char d{ 0 };
-	for (auto e : g[from])
-	{
-		if (valid_vertex_id(e))
-		{
-			if(wt[e] > wt[from] + cost_swivel(d, arrived_from[from].second))
-			{
-				wt[e] = wt[from] + cost_swivel(d, arrived_from[from].second);
-				arrived_from[e] = {from, d};
-				dfs_w(g, e, arrived_from, wt);
-			}
-		}
-		++d;
-	}
-}
-
-auto dfs(auto const& g, char from)
-{
-	std::vector<std::pair<char, char>> arrived_from(g.size());
-	std::vector<int> wt(g.size(), -1);
-	dfs_w(g, from, arrived_from, wt);
-	return arrived_from;
-}
-
 std::vector<char> route(auto const& prev, char start, char end)
 {
 	std::vector<char> route;
@@ -157,14 +122,37 @@ std::vector<std::array<char, 4>> keypad
 	{8, -1, -1, 6}, // 9
 	{0, 3, -1, -1}  // A
 };
+std::vector<std::pair<int, std::vector<char>>> kp_crib
+{
+	{
+		{ 29, {0, 0xa, 1, 0xa, 1, 1, 2, 0xa, 3, 3, 3, 0xa}},
+		{980, {1, 1, 1, 0xa, 0, 0xa, 3, 3, 3, 0xa, 2, 0xa}},
+		{179, {1, 0, 0, 0xa, 1, 1, 0xa, 2, 2, 0xa, 3, 3, 3, 0xa}},
+		{456, {1, 1, 0, 0, 0xa, 2, 0xa, 2, 0xa, 3, 3, 0xa}},
+		{379, {1, 0xa, 0, 0, 1, 1, 0xa, 2, 2, 0xa, 3, 3, 3, 0xa}},
+		{382, {1, 0xa, 0, 1, 1, 0xa, 3, 3, 0xa, 3, 2, 0xa}},
+		{176, {1, 0, 0, 0xa, 1, 1, 0xa, 3, 2, 2, 0xa, 3, 3, 0xa}},
+		{463, {1, 1, 0, 0, 0xa, 2, 2, 0xa, 3, 0xa, 3, 0xa}},
+		{ 83, {0, 0xa, 1, 1, 1, 0xa, 3, 3, 2, 0xa, 3, 0xa}},
+		{789, {1, 1, 1, 0, 0, 0xa, 2, 0xa, 2, 0xa, 3, 3, 3, 0xa}}
+	}
+};
 
-std::vector<char> command_keypad(auto const& s)
+std::vector<char> command_keypad(auto const& s, int k)
 {
 	std::vector<char> rv;
+	for(auto& kpc: kp_crib)
+	{
+		if( kpc.first == k)
+		{
+			std::cout << "kpc hit " << k << "\n";
+			return kpc.second;
+		}
+	}
 	char start {0xa};
 	for(auto c: s)
 	{
-		auto r = dfs(keypad, start);
+		auto r = bfs(keypad, start);
 		auto rt{route(r, start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
 		rv.push_back(0xa);
@@ -191,14 +179,28 @@ std::vector<std::array<char, 4>> directionpad
 	{1, -1, -1, 2},   // a
 };
 
+std::vector<std::vector<std::vector<char>>> dp_data
+{
+	// from 0
+	{{}, {2, 1}, {2, 2}, {2}, {2, 2, 1}},
+	{{3, 0}, {}, {3, 2}, {3}, {2}},
+	{{0, 0}, {1, 0}, {}, {0}, {1}},
+	{{0}, {1}, {2}, {}, {2, 1}},
+	{{3, 0, 0}, {0}, {3}, {3, 0}, {}},
+};
+
+std::vector<char> route_dp(char start, char end)
+{
+	return dp_data[start == 0xa ? 4 : start][end == 0xa ? 4: end];
+}
+
 std::vector<char> command_directionpad(auto const& s)
 {
 	std::vector<char> rv;
 	char start {0xa};
 	for(auto c: s)
 	{
-		auto r = dfs(directionpad, start);
-		auto rt{route(r, start, c)};
+		auto rt{route_dp(start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
 		rv.push_back(0xa);
 		start = c;
@@ -275,18 +277,11 @@ int64_t pt1(auto const& vv)
 	int64_t r{0};
 	for(auto& v: vv)
 	{
-		auto v1{command_keypad(v)};
-		print(v1);
+		int id = to_i(v);
+		auto v1{command_keypad(v, id)};
 		auto v2{command_directionpad(v1)};
-		print(v2);
-		decode_directionpad(v2);
 		auto v3{command_directionpad(v2)};
-		print(v3);
-		decode_directionpad(v3);
-//		auto v4{command_directionpad(v3)};
-//		print(v4);
-		std::cout << v3.size() << "\n";
-		r += v3.size() * to_i(v);
+		r += v3.size() * id;
 	}
 	return r;
 }
@@ -294,9 +289,42 @@ int64_t pt1(auto const& vv)
 int64_t pt2(auto const& vv)
 {
 	timer t("pt2");
-	return 0;
+	int64_t r{0};
+	for(auto& v: vv)
+	{
+		int id = to_i(v);
+		auto v1{command_keypad(v, id)};
+		auto v2 = v1;
+		auto sz{v2.size()};
+		for(int n = 0; n < 25; ++n)
+		{
+			v2 = command_directionpad(v2);
+			std::cout << n << " " << v2.size() << " (" << v2.size () - sz <<"\n";
+			sz = v2.size();
+		}
+		r += v2.size() * id;
+	}
+	return r;
 }
 
+std::vector<char> translate(auto const& a)
+{
+	std::vector<char> rv;
+	for(auto c: a)
+	{
+		if( c == '<')
+			rv.push_back(0);
+		if( c == '^')
+			rv.push_back(1);
+		if( c == '>')
+			rv.push_back(2);
+		if(c == 'v')
+			rv.push_back(3);
+		if( c == 'A')
+			rv.push_back(0xa);
+	}
+	return rv;
+}
 int main()
 {
 	auto vv = get_input();
@@ -306,10 +334,22 @@ int main()
 
 	auto p2{pt2(vv)};
 	std::cout << "pt2 = " << p2 << "\n";
+
+	std::string s = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A";
+	auto v = translate(s);
+	std::cout << s << "\n";
+	decode_directionpad(v);
 }
 
 // <v<A>^>A<A>A<AA>vA^A<vAAA^>A
 // <v<A>A<A>^>AvA<^A>vA^A<v<A>^>AvA^A<v<A>^>AAvA<A^>A<A>A<v<A>A^>AAA<A>vA^A
 //
 // v<<A>>^A<A>AvA<^AA>A<vAAA>^A
-// <vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A
+// <v<A>>^AvA^A<vA<   AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A >^AAAvA<^A>A
+// v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA<^A>Av<A>^AA<A>Av<A<A>>^AAAvA<^A>A
+//
+// 133054 too high
+// 132350 too high
+// 132018 too high
+// 130490 ??
+// 128962 ??
