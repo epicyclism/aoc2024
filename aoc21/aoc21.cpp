@@ -94,7 +94,7 @@ inline int cost_swivel(int df, int dt)
 {
 	if (df == dt)
 		return 1;
-	if(df == 8)
+	if(df == 8 || dt == 8)
 		return 1;
 	return std::abs(dt - df) == 2 ? 1000000 : 2;
 }
@@ -111,6 +111,7 @@ auto dijkstra(auto const& g, char from)
 	auto pq_t_cmp = [&](auto& l, auto& r) { return distance[l.v_] < distance[r.v_]; };
 	std::priority_queue<pq_t, std::vector<pq_t>, decltype(pq_t_cmp)> q(pq_t_cmp);
 	q.push({ from, 8 });
+	arrived_from[from] = { from, 8 };
 	distance[from] = 0;
 	while (!q.empty())
 	{
@@ -121,7 +122,7 @@ auto dijkstra(auto const& g, char from)
 			if (valid_vertex_id(e) && (distance[e] == -1 || distance[e] > distance[p.v_] + cost_swivel(d, p.dir_)))
 			{
 				distance[e] = distance[p.v_] + cost_swivel(d, p.dir_);
-				arrived_from[e] = {e, p.dir_};
+				arrived_from[e] = {p.v_, d};
 				q.push({ e, d });
 			}
 			++d;
