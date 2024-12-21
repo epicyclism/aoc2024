@@ -44,11 +44,12 @@ template<typename D> struct result_recorder_distance
     {}
 };
 
-template<typename D> struct result_recorder_distance_previous
+template<typename D, typename P = vertex_id_t> struct result_recorder_distance_previous
 {
-    using return_type = std::pair<std::vector<D>, std::vector<vertex_id_t>>;
+    using return_type = std::pair<std::vector<D>, std::vector<P>>;
     return_type rv;
-    result_recorder_distance_previous(size_t sz) : rv ( std::piecewise_construct, std::forward_as_tuple( sz, -1), std::forward_as_tuple(sz, -1))
+//    result_recorder_distance_previous(size_t sz) : rv ( std::piecewise_construct, std::forward_as_tuple( sz, -1), std::forward_as_tuple(sz, -1))
+    result_recorder_distance_previous(size_t sz) : rv ( std::piecewise_construct, std::forward_as_tuple( sz, -1), std::forward_as_tuple(sz))
     {}    
     void set_distance(vertex_id_t v, vertex_id_t u)
     {
@@ -58,7 +59,7 @@ template<typename D> struct result_recorder_distance_previous
     {
         return rv.first[v];
     }
-    void set_previous(vertex_id_t v, vertex_id_t u)
+    void set_previous(vertex_id_t v, P u)
     {
         rv.second[v] = u;
     }
