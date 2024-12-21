@@ -186,21 +186,37 @@ std::vector<char> command_directionpad(auto const& s)
 	return rv;
 }
 
+int64_t to_i(auto& v)
+{
+	int64_t t{0};
+	for(auto c: v)
+	{
+		if(!::isdigit(c))
+			break;
+		t *= 10;
+		t += c - '0';
+	}
+	return t;
+}
+
 int64_t pt1(auto const& vv)
 {
 	timer t("pt1");
+	int64_t r{0};
 	for(auto& v: vv)
 	{
 		auto v1{command_keypad(v)};
-		print(v1);
+//		print(v1);
 		auto v2{command_directionpad(v1)};
-		print(v2);
+//		print(v2);
 		auto v3{command_directionpad(v2)};
-//		print(v3);
-		auto v4{command_directionpad(v3)};
-		print(v4);
+		print(v3);
+//		auto v4{command_directionpad(v3)};
+//		print(v4);
+		std::cout << v3.size() << " " << to_i(v) << "\n";
+		r += v3.size() * to_i(v);
 	}
-	return 0;
+	return r;
 }
 
 int64_t pt2(auto const& vv)
