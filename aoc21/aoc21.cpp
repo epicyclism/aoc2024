@@ -64,49 +64,74 @@ void print(auto const& v)
 
 auto bfs(auto const& g, char id_from) 
 {
-    // abstract the differences in return data required
-    using recorder_t = result_recorder_distance_previous<char, char>;
-
-//    recorder_t              recorder(g.size());
 	std::vector<std::pair<char, char>> 		arrived_from(g.size());
     std::vector<bool>       visited(g.size());
     std::queue<char> q;
     q.push(id_from);
-//    recorder.set_distance(id_from, id_from);
+	arrived_from[id_from] = {id_from, 0};
     visited[id_from] = true;
     while (!q.empty())
     {
         auto u = q.front(); q.pop();
-		char d{0};
-        for (auto e : g[u])
-        {
-
-            if (valid_vertex_id(e) && !visited[e])
-            {
-                visited[e] = true;
-				arrived_from[e] = {u, d};
-//                recorder.set_distance(e, u);
-//                recorder.set_previous(e, u);
-                q.push(e);
+		auto& eg{g[u]};
+		char d{arrived_from[u].second};
+		for(int n = 0; n < 4; ++n)
+		{
+        	if (valid_vertex_id(eg[d]) && !visited[eg[d]])
+        	{
+                visited[eg[d]] = true;
+				arrived_from[eg[d]] = {u, d};
+               q.push(eg[d]);
             }
 			++d;
-        }
+			d &= 3;
+		}
     }
     return arrived_from;
 }
 
+inline int cost_swivel(int df, int dt)
+{
+	if (df == dt)
+		return 1;
+	if(df == 8)
+		return 1;
+	return std::abs(dt - df) == 2 ? 1000000 : 2;
+}
+
+auto dijkstra(auto const& g, char from)
+{
+	struct pq_t
+	{
+		char v_;
+		char dir_;
+	};
+	std::vector<std::pair<char, char>> 		arrived_from(g.size());
+	std::vector<int> distance(g.size(), -1);
+	auto pq_t_cmp = [&](auto& l, auto& r) { return distance[l.v_] < distance[r.v_]; };
+	std::priority_queue<pq_t, std::vector<pq_t>, decltype(pq_t_cmp)> q(pq_t_cmp);
+	q.push({ from, 8 });
+	distance[from] = 0;
+	while (!q.empty())
+	{
+		auto p = q.top(); q.pop();
+		char d{ 0 };
+		for (auto e : g[p.v_])
+		{
+			if (valid_vertex_id(e) && (distance[e] == -1 || distance[e] > distance[p.v_] + cost_swivel(d, p.dir_)))
+			{
+				distance[e] = distance[p.v_] + cost_swivel(d, p.dir_);
+				arrived_from[e] = {e, p.dir_};
+				q.push({ e, d });
+			}
+			++d;
+		}
+	}
+
+	return arrived_from;
+}
 std::vector<char> route(auto const& prev, char start, char end)
 {
-#if 0
-	std::cout << "route - " << +start << " " << +end << "\n";
-	int n{0};
-	for(auto& e: prev)
-	{
-		std::cout << n << " " << +e.first << " " << to_char_dir(e.second) << "\n";
-		++n;
-	}
-	std::cout << "\n";
-#endif
 	std::vector<char> route;
 	auto p{end};
 	while(p!=start)
@@ -115,7 +140,6 @@ std::vector<char> route(auto const& prev, char start, char end)
 		p = prev[p].first;
 	}
 	std::reverse(route.begin(), route.end());
-//	print(route);
 	return route;
 }
 
@@ -145,7 +169,7 @@ std::vector<char> command_keypad(auto const& s)
 	char start {0xa};
 	for(auto c: s)
 	{
-		auto r = bfs(keypad, start);
+		auto r = dijkstra(keypad, start);
 		auto rt{route(r, start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
 		rv.push_back(0xa);
@@ -178,7 +202,7 @@ std::vector<char> command_directionpad(auto const& s)
 	char start {0xa};
 	for(auto c: s)
 	{
-		auto r = bfs(directionpad, start);
+		auto r = dijkstra(directionpad, start);
 		auto rt{route(r, start, c)};
 		rv.insert(rv.end(), rt.begin(), rt.end());
 		rv.push_back(0xa);
@@ -228,7 +252,7 @@ void decode_directionpad(auto const& v)
 					now = 2;
 			break;
 			case 0xa:
-				std::cout << to_char_dir(now) << "A";
+				std::cout << to_char_dir(now);
 			break;
 			default:
 			break;
@@ -278,38 +302,19 @@ int64_t pt2(auto const& vv)
 	return 0;
 }
 
-std::vector<char> translate(auto const& v)
-{
-	std::vector<char> vr;
-	for(auto c: v)
-		if(c == '<')
-			vr.push_back(0);
-		else if( c == '^')
-			vr.push_back(1);
-		else if(c == '>')
-			vr.push_back(2);
-		else if( c == 'v')
-			vr.push_back(3);
-		else if(c == 'A')
-			vr.push_back(0xa);
-		else
-			std::cout << "bad char " << c << "\n";
-	return vr;
-}
-
 int main()
 {
 	auto vv = get_input();
 
-	std::string s = "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A";
-	auto v = translate(s);
-	decode_directionpad(v);
+	auto p1{pt1(vv)};
+	std::cout << "pt1 = " << p1 << "\n";
 
-//	auto p1{pt1(vv)};
-//	std::cout << "pt1 = " << p1 << "\n";
-//	auto p2{pt2(vv)};
-//	std::cout << "pt2 = " << p2 << "\n";
+	auto p2{pt2(vv)};
+	std::cout << "pt2 = " << p2 << "\n";
 }
 
+// <v<A>^>A<A>A<AA>vA^A<vAAA^>A
 // <v<A>A<A>^>AvA<^A>vA^A<v<A>^>AvA^A<v<A>^>AAvA<A^>A<A>A<v<A>A^>AAA<A>vA^A
+//
+// v<<A>>^A<A>AvA<^AA>A<vAAA>^A
 // <vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A
