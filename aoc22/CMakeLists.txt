@@ -1,0 +1,4 @@
+cmake_minimum_required (VERSION 3.21)
+
+add_executable(aoc22 aoc22.cpp)
+target_include_directories(aoc22 PUBLIC ../common)
