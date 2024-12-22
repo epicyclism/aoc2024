@@ -216,16 +216,15 @@ int64_t pt2(auto const& vv)
 			++it2;
 			auto sp = std::span(it, it2);
 			auto v2 = command_directionpad(sp);
-			for(int n = 1; n < 25; ++n)
+			for(int n = 1; n < 24; ++n)
 			{
 				v2 = command_directionpad(v2);
-				std::cout << "      " << n << "\n";
+				std::cout << "      " << n << " " << sz << "\n";
 			}
 			sz += v2.size();
 			it = it2;
-			std::cout << "   " << sz << "\n";
-;		}
-		std::cout << sz << "\n";
+		}
+		std::cout << id << " * " << sz << " = " << sz * id << "\n";
 		r += sz * id;
 	}
 	return r;
