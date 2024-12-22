@@ -32,7 +32,6 @@ inline uint64_t prune(uint64_t s)
 	return s % 16777216;
 }
 
-
 uint64_t evolve(uint64_t s)
 {
 	s = mix(s, s * 64);
@@ -44,6 +43,17 @@ uint64_t evolve(uint64_t s)
 	return s;
 }
 
+uint64_t evolve2(uint64_t s)
+{
+	s ^= s << 6;
+	s &= 0xffffff;
+	s ^= s >> 5;
+	s &= 0xffffff;
+	s ^= s * 2048ULL;
+	s &= 0xffffff;
+	return s;
+}
+
 uint64_t pt1(auto const& v)
 {
 	timer t("pt1");
@@ -51,7 +61,7 @@ uint64_t pt1(auto const& v)
 	for(auto s: v)
 	{
 		for(int n = 0; n < 2000; ++n)
-			s = evolve(s);
+			s = evolve2(s);
 		r += s;
 	}
 	return r;
