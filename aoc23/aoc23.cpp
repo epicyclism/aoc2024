@@ -50,15 +50,6 @@ std::ostream& operator<<(std::ostream& o, vertex_id_t v)
 auto pt1(auto const& al)
 {
 	timer t("p1");
-#if 0
-	for(auto& m: al)
-	{
-		std::cout << m.first.first << m.first.second << "-";
-		for(auto p: m.second)
-			std::cout << p.first << p.second << " ";
-		std::cout << "\n";
-	}
-#endif
 	std::vector<std::vector<vertex_id_t>> vg;
 	for(auto i1 = al.begin(); i1 != al.end(); ++i1)
 	{
@@ -85,17 +76,7 @@ auto pt1(auto const& al)
 	auto ne = std::unique(vg.begin(), vg.end());
 
 	return std::distance(vg.begin(), ne);
-//	std::cout << (*i1).first << "," << (*i2).first << "," << (*i3).first << "\n";
 }
-#if 0
-algorithm BronKerbosch1(R, P, X) is
-    if P and X are both empty then
-        report R as a maximal clique
-    for each vertex v in P do
-        BronKerbosch1(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
-        P := P \ {v}
-        X := X ⋃ {v}
-#endif
 
 std::set<vertex_id_t> form_intersection(std::set<vertex_id_t> const& l, std::set<vertex_id_t> const& r)
 {
@@ -104,20 +85,21 @@ std::set<vertex_id_t> form_intersection(std::set<vertex_id_t> const& l, std::set
 	return rs;
 }
 
-void bronkerbosch(auto& g, std::set<vertex_id_t> R, std::set<vertex_id_t> P, std::set<vertex_id_t> X)
+template<typename C> void bron_kerbosch(auto& g, std::set<vertex_id_t> R, std::set<vertex_id_t> P, std::set<vertex_id_t> X, C cc )
 {
 	if(P.empty() && X.empty())
 	{
-		std::cout << R.size() << "\n";
+		cc(R);
 		return;
 	}
+	auto PC = P;
 	for(auto v : P)
 	{
 		R.insert(v);
-		bronkerbosch(g, R, form_intersection(P, g[v]), form_intersection(X, g[v]));
-		R.erase(v);
-		P.erase(v);
+		bron_kerbosch(g, R, form_intersection(PC, g[v]), form_intersection(X, g[v]), cc);
+		PC.erase(v);
 		X.insert(v);
+		R.erase(v);
 	}
 }
 
@@ -127,14 +109,22 @@ auto pt2(auto& al)
 	std::set<vertex_id_t> P;
 	for(auto& m: al)
 		P.insert(m.first);
-	bronkerbosch(al, std::set<vertex_id_t>(), P, std::set<vertex_id_t>());
-	return 0;
+	std::set<vertex_id_t> out;
+	bron_kerbosch(al, std::set<vertex_id_t>(), P, std::set<vertex_id_t>(), [&](auto& c) { if (c.size() > out.size()) out.swap(c); });
+	std::string s;
+	for (auto v : out)
+	{
+		if (!s.empty())
+			s += ',';
+		s += v.first;
+		s += v.second;
+	}
+	return s;
 }
 
 int main()
 {
 	auto al = get_input();
-	std::cout << al.size() << "\n";
 	auto p1 = pt1(al);
 	std::cout << "pt1 = " << p1 << "\n";
 	auto p2 = pt2(al);
