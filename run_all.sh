@@ -41,3 +41,7 @@ echo "day 20"
 build/aoc20/aoc20 < inputs/aoc20/input.txt
 echo "day 21"
 build/aoc21/aoc21 < inputs/aoc21/input.txt
+echo "day 22"
+build/aoc22/aoc22 < inputs/aoc22/input
+echo "day 23"
+build/aoc23/aoc23 < inputs/aoc23/input

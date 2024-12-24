@@ -26,19 +26,19 @@ auto get_input()
 	return al;
 }
 
-bool is_connected(auto const& al, vertex_id_t f, vertex_id_t t)
+bool is_connected(auto const& g, vertex_id_t f, vertex_id_t t)
 {
-	for(auto const& v: al.at(f))
+	for(auto const& v:g.at(f))
 		if( v == t)
 			return true;
 	return false;
 }
 
-bool is_clique3(auto const& al, vertex_id_t v1, vertex_id_t v2, vertex_id_t v3)
+bool is_clique3(auto const& g, vertex_id_t v1, vertex_id_t v2, vertex_id_t v3)
 {
 	if(v1 == v2 || v1 == v3 || v2 == v3)
 		return false;
-	return is_connected(al, v1, v2) && is_connected(al, v1, v3) && is_connected(al, v2, v3);
+	return is_connected(g, v1, v2) && is_connected(g, v1, v3) && is_connected(g, v2, v3);
 }
 
 std::ostream& operator<<(std::ostream& o, vertex_id_t v)
@@ -47,19 +47,25 @@ std::ostream& operator<<(std::ostream& o, vertex_id_t v)
 	return o;
 }
 
-auto pt1(auto const& al)
+void print(auto const& S)
+{
+	for(auto v: S)
+		std::cout << v << " ";
+}
+
+auto pt1(auto const& g)
 {
 	timer t("p1");
 	std::vector<std::vector<vertex_id_t>> vg;
-	for(auto i1 = al.begin(); i1 != al.end(); ++i1)
+	for(auto i1 = g.begin(); i1 != g.end(); ++i1)
 	{
 		if((*i1).first.first == 't')
 		{
-			for(auto i2 = al.begin(); i2 != al.end(); ++i2)
+			for(auto i2 = g.begin(); i2 != g.end(); ++i2)
 			{
-				for(auto i3 = al.begin(); i3 != al.end(); ++i3)
+				for(auto i3 = g.begin(); i3 != g.end(); ++i3)
 				{
-					if(is_clique3(al, (*i1).first, (*i2).first, (*i3).first))
+					if(is_clique3(g, (*i1).first, (*i2).first, (*i3).first))
 					{
 						vg.push_back({});
 						vg.back().emplace_back((*i1).first);
@@ -74,7 +80,15 @@ auto pt1(auto const& al)
 		std:sort(cl.begin(), cl.end());
 	std::sort(vg.begin(), vg.end());
 	auto ne = std::unique(vg.begin(), vg.end());
-
+	vg.erase(ne, vg.end());
+#if 0
+	for(auto& l: vg)
+		for(auto v: l)
+		{
+			print(vg.back());
+			std::cout << "\n";
+		}
+#endif
 	return std::distance(vg.begin(), ne);
 }
 
@@ -87,30 +101,55 @@ std::set<vertex_id_t> form_intersection(std::set<vertex_id_t> const& l, std::set
 
 template<typename C> void bron_kerbosch(auto& g, std::set<vertex_id_t> R, std::set<vertex_id_t> P, std::set<vertex_id_t> X, C cc )
 {
-	if(P.empty() && X.empty())
+	if(P.empty() /*&& X.empty()*/)
 	{
-		cc(R);
+		if(R.size() > 2)
+		{
+#if 0
+			print(R);
+			std::cout << " : ";
+			print(X);
+			std::cout << "\n";
+#endif
+			cc(R);
+		}
 		return;
 	}
 	auto PC = P;
 	for(auto v : P)
 	{
 		R.insert(v);
-		bron_kerbosch(g, R, form_intersection(PC, g[v]), form_intersection(X, g[v]), cc);
+		bron_kerbosch(g, R, form_intersection(PC, g.at(v)), form_intersection(X, g.at(v)), cc);
 		PC.erase(v);
 		X.insert(v);
 		R.erase(v);
 	}
 }
 
-auto pt2(auto& al)
+auto pt1a(auto const& g)
+{
+	timer t("p1a");
+	std::set<vertex_id_t> P;
+	for(auto& m: g)
+		P.insert(m.first);
+	int cnt = 0;
+	bron_kerbosch(g, std::set<vertex_id_t>(), P, std::set<vertex_id_t>(),
+		[&](auto& c)
+		{
+			if (c.size() > 2)
+				cnt += std::any_of(c.begin(), c.end(), [](auto v){ return v.first == 't';});
+		});
+	return cnt;
+}
+
+auto pt2(auto& g)
 {
 	timer t("p2");
 	std::set<vertex_id_t> P;
-	for(auto& m: al)
+	for(auto& m: g)
 		P.insert(m.first);
 	std::set<vertex_id_t> out;
-	bron_kerbosch(al, std::set<vertex_id_t>(), P, std::set<vertex_id_t>(), [&](auto& c) { if (c.size() > out.size()) out.swap(c); });
+	bron_kerbosch(g, std::set<vertex_id_t>(), P, std::set<vertex_id_t>(), [&](auto& c) { if (c.size() > out.size()) out.swap(c); });
 	std::string s;
 	for (auto v : out)
 	{
@@ -124,9 +163,11 @@ auto pt2(auto& al)
 
 int main()
 {
-	auto al = get_input();
-	auto p1 = pt1(al);
+	auto g = get_input();
+	auto p1 = pt1(g);
 	std::cout << "pt1 = " << p1 << "\n";
-	auto p2 = pt2(al);
+//	auto p1a = pt1a(al);
+//	std::cout << "pt1a = " << p1a << "\n";
+	auto p2 = pt2(g);
 	std::cout << "pt2 = " << p2 << "\n";
 }
