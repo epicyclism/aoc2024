@@ -90,7 +90,7 @@ auto get_input()
 	return std::make_pair(vars, nw);
 }
 
-int64_t pt1(auto vars, auto nw)
+uint64_t pt1(auto vars, auto nw)
 {
 	timer t("pt1");
 	while(!std::all_of(nw.begin(), nw.end(), [](auto const& g){ return g.acted_;}))
@@ -100,13 +100,13 @@ int64_t pt1(auto vars, auto nw)
 			g.act(vars);
 		}
 	}
-	int64_t r = 0;
+	uint64_t r = 0;
 	for(auto i = vars.rbegin(); i != vars.rend(); ++i)
 	{
 		if((*i).first[0] == 'z')
 		{
 			r <<= 1;
-			r |= (*i).second;
+			r |= (*i).second ? 1ULL : 0ULL;
 		}
 	}
 	return r;
@@ -187,27 +187,41 @@ int64_t pt2(auto vars, auto nw)
 	timer t("pt2");
 	uint64_t b = 1ULL;
 	std::vector<std::pair<int, int>> swps;
-	while(auto v = process(val, 1, vars, nw) != res)
+	uint64_t v = process(val, 1, vars, nw);
+	while( v != res)
 	{
-		while(!(( v & b ) ^ (res & b)))
+	out0:
+		while((( v & b ) ^ (res & b)) == 0)
 		{
-			b <<= 1;
 			if(b == lim)
 			{
 				std::cout << "tilt\n";
 				goto out;
 			}
+			b <<= 1;
 		}
 		for(int n = 0; n < nw.size() - 1; ++n)
 		{
-			for(int m = n + 1; m < nw.size(); ++m)
+			for (int m = n + 1; m < nw.size(); ++m)
 			{
-
+				swap(nw[n], nw[m]);
+				v = process(val, 1, vars, nw);
+				if (((v & b) ^ (res & b)) == 0)
+				{
+					if(n < m)
+						std::cout << nw[n].o_ << " " << nw[m].o_ << "\n";
+					else
+						std::cout << nw[m].o_ << " " << nw[n].o_ << "!\n";
+					swps.emplace_back(n, m);
+//					goto out0;
+				}
+				swap(nw[n], nw[m]);
 			}
 		}
-		b <<= 1;
+		goto out;
+
 	}
-	out:
+out:
 	for(auto p: swps)
 		std::cout << nw[p.first].o_ << " " << nw[p.second].o_ << "\n";
 
