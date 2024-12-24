@@ -229,7 +229,7 @@ void set_bit( auto& vars, auto& nw, uint64_t v, uint64_t b, std::vector<std::pai
 //					else
 //						std::cout << nw[m].o_ << " " << nw[n].o_ << "!\n";
 					swps.emplace_back(n, m);
-					set_bit(vars, nw, v, b << 1, swps);
+					set_bit(vars, nw, v, b, swps);
 					swps.pop_back();
 				}
 				swap(nw[n], nw[m]);
