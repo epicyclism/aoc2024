@@ -4,8 +4,6 @@
 #include <map>
 #include <string>
 #include <algorithm>
-#include <numeric>
-#include <ranges>
 
 #include "ctre_inc.h"
 #include "timer.h"
@@ -46,6 +44,8 @@ struct gate
 	bool acted_ = false;
 	void act(auto& vars )
 	{
+		if(acted_)
+			return;
 		if(!(vars.contains(A_) && vars.contains(B_)))
 			return;
 		bool A = vars[A_];
@@ -125,21 +125,21 @@ void swap(gate& g1, gate& g2)
 	std::swap(g1.o_, g2.o_);
 }
 
-int64_t process(int64_t xv, int64_t yv, auto& vars, auto& nw)
+uint64_t process(uint64_t xv, uint64_t yv, auto& vars, auto& nw)
 {
-	int64_t xb = 1;
-	int64_t yb = 1;
+	uint64_t xb = 1;
+	uint64_t yb = 1;
 	reset(vars, nw);
-	for(auto i = vars.rbegin(); i != vars.rend(); ++i)
+	for(auto i = vars.begin(); i != vars.end(); ++i)
 	{
 		if((*i).first[0] == 'x')
 		{
-			(*i).second = xv & xb;
+			(*i).second = (xv & xb) ? true : false;
 			xb <<= 1;
 		}
 		if((*i).first[0] == 'y')
 		{
-			(*i).second = yv & yb;
+			(*i).second = (yv & yb) ? true : false;
 			yb <<= 1;
 		}
 	}
@@ -147,13 +147,15 @@ int64_t process(int64_t xv, int64_t yv, auto& vars, auto& nw)
 		for(auto& g: nw)
 			g.act(vars);
 
-	int64_t r = 0;
-	for(auto i = vars.rbegin(); i != vars.rend(); ++i)
+	uint64_t r = 0;
+	uint64_t b = 1LL;
+	for(auto i = vars.begin(); i != vars.end(); ++i)
 	{
 		if((*i).first[0] == 'z')
 		{
-			r <<= 1;
-			r |= (*i).second;
+			if((*i).second)
+				r |= b;
+			b <<= 1;
 		}
 	}
 	return r;
@@ -175,77 +177,40 @@ void trace(nm in, auto const& nw)
 			trace( g.o_,nw);
 		}
 	std::cout << "\n";
-}
+}	
 
-bool test_bit(int b, auto& vars, auto& nw)
-{
-	auto xy = 1LL << b;
-	return process(0, xy, vars, nw) == xy &&
-		process(xy, 0, vars, nw) == xy &&
-		process(xy, xy, vars, nw) == xy << 1;
-}
-
-void print_netlist(auto const& nw)
-{
-	int gn = 1;
-	std::cout << "*\n";
-	for(auto& g: nw)
-	{
-		std::cout << "G" << gn << " " << g.A_ << " " << g.B_ << " 0 0 0 0 " <<
-				 g.o_ << " 0 " << to_sv (g.op_) << "\n";
-		++gn;
-	}
-	std::cout << ".anno\n.end\n";
-}
-
+constexpr uint64_t val = 0xfffffffffff;
+constexpr uint64_t res = 0x1ffffffffffe;
+constexpr uint64_t lim = 0x100000000000;
 int64_t pt2(auto vars, auto nw)
 {
-#if 0
 	timer t("pt2");
-	int x = 0;
-	int y = 0;
-	int z = 0;
-
-	std::cout << " 0 +  0 = " << process(0, 0, vars, nw) << "\n";
-	std::cout << " 0 +  1 = " << process(0, 1, vars, nw) << "\n";
-	std::cout << " 1 +  0 = " << process(1, 0, vars, nw) << "\n";
-	std::cout << " 1 +  1 = " << process(1, 1, vars, nw) << "\n";
-	std::cout << " 0 +  2 = " << process(0, 2, vars, nw) << "\n";
-	std::cout << " 2 +  0 = " << process(2, 0, vars, nw) << "\n";
-	std::cout << " 2 +  2 = " << process(2, 2, vars, nw) << "\n";
-
-	for(int n = 0; n < 45; ++n)
+	uint64_t b = 1ULL;
+	std::vector<std::pair<int, int>> swps;
+	while(auto v = process(val, 1, vars, nw) != res)
 	{
-		std::cout << "bit " << n << (test_bit(n, vars, nw) ? " good\n" : " bad\n");
+		while(!(( v & b ) ^ (res & b)))
+		{
+			b <<= 1;
+			if(b == lim)
+			{
+				std::cout << "tilt\n";
+				goto out;
+			}
+		}
+		for(int n = 0; n < nw.size() - 1; ++n)
+		{
+			for(int m = n + 1; m < nw.size(); ++m)
+			{
+
+			}
+		}
+		b <<= 1;
 	}
+	out:
+	for(auto p: swps)
+		std::cout << nw[p.first].o_ << " " << nw[p.second].o_ << "\n";
 
-//	trace("x00", nw);
-	trace("y00", nw);
-
-	trace("z00", nw);
-	trace("x01", nw);
-	trace("y01", nw);
-	trace("z01", nw);
-	trace("x02", nw);
-	trace("y02", nw);
-	trace("z02", nw);
-	trace("x03", nw);
-	trace("y03", nw);
-	trace("z03", nw);
-	trace("x04", nw);
-	trace("y04", nw);
-	trace("z04", nw);
-	trace("x05", nw);
-	trace("y05", nw);
-	trace("z05", nw);
-	trace("x06", nw);
-	trace("y06", nw);
-	trace("z06", nw);
-	trace("x07", nw);
-	trace("y07", nw);
-	trace("z07", nw);
-#endif
-	print_netlist(nw);
 	return 0;
 }
 
