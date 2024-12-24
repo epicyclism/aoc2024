@@ -181,47 +181,71 @@ void trace(nm in, auto const& nw)
 
 constexpr uint64_t val = 0xfffffffffff;
 constexpr uint64_t res = 0x1ffffffffffe;
-constexpr uint64_t lim = 0x100000000000;
+constexpr uint64_t lim = 0x1fffffffffff;
+bool pair_in(int n, int m, std::vector<std::pair<int, int>> const& swps)
+{
+	for(auto& p: swps)
+	{
+		if( p.first == n || p.second == n || p.first == m || p.second == m)
+			return true;
+	}
+	return false;
+}
+
+void set_bit( auto& vars, auto& nw, uint64_t v, uint64_t b, std::vector<std::pair<int, int>>& swps)
+{
+	b |= 1;
+	if(swps.size() == 4)
+	{
+		for(auto p: swps)
+			std::cout << nw[p.first].o_ << "," << nw[p.second].o_ << " ";
+		if( v == 0x1ffffffffffe)
+			std::cout << "!!!!!";
+		std::cout << "\n";
+		return;
+	}
+	while((( v & b ) ^ (res & b)) == 0)
+	{
+		if(b == lim)
+		{
+			std::cout << "tilt\n";
+			return;
+		}
+		b <<= 1;
+		b |= 1;
+	}
+	for(int n = 0; n < nw.size() - 1; ++n)
+	{
+		for (int m = n + 1; m < nw.size(); ++m)
+		{
+			if(!pair_in(n, m, swps))
+			{
+				swap(nw[n], nw[m]);
+				v = process(val, 1, vars, nw);
+				if (((v & b) ^ (res & b)) == 0)
+				{
+//					if(n < m)
+//						std::cout << nw[n].o_ << " " << nw[m].o_ << "\n";
+//					else
+//						std::cout << nw[m].o_ << " " << nw[n].o_ << "!\n";
+					swps.emplace_back(n, m);
+					set_bit(vars, nw, v, b << 1, swps);
+					swps.pop_back();
+				}
+				swap(nw[n], nw[m]);
+			}
+		}
+	}
+}
+
 int64_t pt2(auto vars, auto nw)
 {
 	timer t("pt2");
 	uint64_t b = 1ULL;
 	std::vector<std::pair<int, int>> swps;
 	uint64_t v = process(val, 1, vars, nw);
-	while( v != res)
-	{
-	out0:
-		while((( v & b ) ^ (res & b)) == 0)
-		{
-			if(b == lim)
-			{
-				std::cout << "tilt\n";
-				goto out;
-			}
-			b <<= 1;
-		}
-		for(int n = 0; n < nw.size() - 1; ++n)
-		{
-			for (int m = n + 1; m < nw.size(); ++m)
-			{
-				swap(nw[n], nw[m]);
-				v = process(val, 1, vars, nw);
-				if (((v & b) ^ (res & b)) == 0)
-				{
-					if(n < m)
-						std::cout << nw[n].o_ << " " << nw[m].o_ << "\n";
-					else
-						std::cout << nw[m].o_ << " " << nw[n].o_ << "!\n";
-					swps.emplace_back(n, m);
-//					goto out0;
-				}
-				swap(nw[n], nw[m]);
-			}
-		}
-		goto out;
+	set_bit(vars, nw, v, b, swps);
 
-	}
-out:
 	for(auto p: swps)
 		std::cout << nw[p.first].o_ << " " << nw[p.second].o_ << "\n";
 
