@@ -31,6 +31,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# dump_cmake_variables(CXX)
+
 FetchContent_Declare( ctre 
     GIT_REPOSITORY https://github.com/hanickadot/compile-time-regular-expressions
     GIT_TAG origin/main
@@ -72,3 +74,4 @@ add_subdirectory(aoc21)
 add_subdirectory(aoc22)
 add_subdirectory(aoc23)
 add_subdirectory(aoc24)
+add_subdirectory(aoc25)

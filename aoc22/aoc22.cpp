@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <numeric>
+//#include <functional>
 #include <charconv>
 
 #include "timer.h"
@@ -54,17 +55,17 @@ uint64_t evolve2(uint64_t s)
 	return s;
 }
 
-uint64_t pt1(auto const& v)
+int64_t pt1(auto const& v)
 {
 	timer t("pt1");
-	uint64_t r = 0;
-	for(auto s: v)
-	{
-		for(int n = 0; n < 2000; ++n)
-			s = evolve2(s);
-		r += s;
-	}
-	return r;
+	return std::transform_reduce(v.begin(), v.end(), 0LL,
+		std::plus<>(),
+		 [](auto s)
+			{
+				for(int n = 0; n < 2000; ++n)
+					s = evolve2(s);
+				return s;
+			});
 }
 
 inline uint32_t encode_sequence(char a, char b, char c, char d)
@@ -88,7 +89,7 @@ uint64_t pt2(auto const& v)
 	std::vector<char> diff;
 	std::vector<char> vp(0xfffff);
 	std::vector<int>  per_k(0xfffff);
-	auto k1 = encode_sequence(-2, 1, -1, 3);
+//	auto k1 = encode_sequence(-2, 1, -1, 3);
 	for(auto s: v)
 	{
 		price.clear();
@@ -96,7 +97,7 @@ uint64_t pt2(auto const& v)
 		price.push_back(s % 10);
 		for(int n = 0; n < 2000; ++n)
 		{
-			s = evolve(s);
+			s = evolve2(s);
 			price.push_back(s % 10);
 		}
 		diff.resize(price.size());
