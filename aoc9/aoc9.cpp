@@ -14,10 +14,10 @@ auto get_input()
 	return ln;
 }
 
-std::vector<int64_t> expand(std::string const& s)
+std::vector<int> expand(std::string const& s)
 {
-	std::vector<int64_t> r;
-	int64_t id { 0 };
+	std::vector<int> r;
+	int id { 0 };
 	bool f { true};
 	for(auto i: s)
 	{
@@ -36,7 +36,7 @@ std::vector<int64_t> expand(std::string const& s)
 	return r;
 }
 
-auto compact(std::vector<int64_t>& v)
+auto compact(std::vector<int>& v)
 {
 	if(v.size () < 2)
 		return;
@@ -58,7 +58,7 @@ auto compact(std::vector<int64_t>& v)
 	}
 }
 
-int64_t checksum(std::vector<int64_t> const& v)
+int64_t checksum(std::vector<int> const& v)
 {
 	int64_t cs{0};
 	for(size_t n { 0 }; n < v.size(); ++n)
@@ -75,7 +75,7 @@ int64_t pt1(std::string const& l)
 	return checksum(ev);
 }
 
-auto find_file(std::vector<int64_t>& v, std::vector<int64_t>::iterator re)
+auto find_file(std::vector<int>& v, std::vector<int>::iterator re)
 {
 	while (*re == -1 && re != v.begin())
 		--re;
@@ -88,7 +88,7 @@ auto find_file(std::vector<int64_t>& v, std::vector<int64_t>::iterator re)
 	return std::make_pair(re, e + 1);
 }
 
-auto find_space(std::vector<int64_t>& v, size_t sz, std::vector<int64_t>::iterator lim)
+auto find_space(std::vector<int>& v, size_t sz, std::vector<int>::iterator lim)
 {
 	auto bs{ v.begin() };
 	while (bs < lim)
@@ -116,7 +116,7 @@ auto find_space(std::vector<int64_t>& v, size_t sz, std::vector<int64_t>::iterat
 	return std::make_pair(bs, bs);
 }
 
-void compact2(std::vector<int64_t>& v)
+void compact2(std::vector<int>& v)
 {
 	if (v.size() < 2)
 		return ;

@@ -135,6 +135,8 @@ int64_t pt2(auto const& in)
 int main()
 {
 	auto in = get_input();
-	std::cout << "pt1 = " << pt1(in) << "\n";
-	std::cout << "pt2 = " << pt2(in) << "\n";
+	auto p1 = pt1(in);
+	auto p2 = pt2(in);
+	std::cout << "pt1 = " << p1 << "\n";
+	std::cout << "pt2 = " << p2 << "\n";
 }

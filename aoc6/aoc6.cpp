@@ -139,7 +139,8 @@ int main()
 	// assume square...
 //    size_t height{ in.second.size() / in.first};
 //	std::cout << stride << ", " << height << "\n";
- 
-	std::cout << "pt1 = " << pt1(in.first, in.second) << "\n";
-	std::cout << "pt2 = " << pt2(in.first, in.second) << "\n";
+	auto p1 = pt1(in.first, in.second);
+	auto p2 = pt2(in.first, in.second);
+	std::cout << "pt1 = " << p1 << "\n";
+	std::cout << "pt2 = " << p2 << "\n";
 }

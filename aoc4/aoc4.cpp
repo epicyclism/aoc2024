@@ -47,6 +47,7 @@ bool find(vane const& v, auto& md, pt p)
 
 auto pt1(auto in)
 {
+	timer t("p1");
 	auto stride = in.extent(0);
 	auto height = in.extent(1);
 	int cnt { 0 };
@@ -94,6 +95,7 @@ bool findx(vanex const& v, auto& md, pt p)
 }
 auto pt2(auto const& in)
 {
+	timer t("p2");
 	auto stride = in.extent(0);
 	auto height = in.extent(1);
 	int cnt { 0 };
@@ -119,7 +121,8 @@ int main()
 	size_t stride { in.first};
     size_t height{ in.second.size() / in.first};
     stdex::mdspan md(in.second.data(), stride, height);
- 
-	std::cout << "pt1 = " << pt1(md) << "\n";
-	std::cout << "pt2 = " << pt2(md) << "\n";
+	auto p1 = pt1(md);
+	auto p2 = pt2(md);
+	std::cout << "pt1 = " << p1 << "\n";
+	std::cout << "pt2 = " << p1 << "\n";
 }

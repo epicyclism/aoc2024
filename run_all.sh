@@ -2,7 +2,7 @@
 echo "day 1"
 build/aoc1/aoc1 < inputs/aoc1/input
 echo "day 2"
-build/aoc2/aoc2 < inputs/aoc2/input
+build/aoc2/aoc2bb < inputs/aoc2/input
 echo "day 3"
 build/aoc3/aoc3 < inputs/aoc3/input
 echo "day 4"
@@ -12,7 +12,7 @@ build/aoc5/aoc5 < inputs/aoc5/input
 echo "day 6"
 build/aoc6/aoc6 < inputs/aoc6/input
 echo "day 7"
-build/aoc7/aoc7 < inputs/aoc7/input
+build/aoc7/aoc7r < inputs/aoc7/input
 echo "day 8"
 build/aoc8/aoc8 < inputs/aoc8/input
 echo "day 9"
